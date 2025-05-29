@@ -1,128 +1,149 @@
-import React, { useState } from "react";
+import color from "../../shared/Color";
 import {
   Box,
   Typography,
   Paper,
   Button,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Tooltip,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  useTheme,
-  MenuItem,
-  IconButton,
-  useMediaQuery,
-  Tooltip,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { deleteUser, getAllUser } from "../../../services/Service";
+import { toast } from "react-toastify";
 
 const MemberTable = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [newMember, setNewMember] = useState({
-    name: "",
-    email: "",
-    joinDate: "",
-    membership: "Basic",
+
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [membershipFilter, setMembershipFilter] = useState("All");
+  const [members, setMembers] = useState([]);
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState(null);
+
+  const payLoad = {
+    data: { filter: "", role: "Member" },
+    page: 0,
+    pageSize: 50,
+    order: [["createdAt", "ASC"]],
+  };
+
+  useEffect(() => {
+    getAllUser(payLoad)
+      .then((res) => {
+        setMembers(res?.data?.data?.rows || []);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  const handleAddMember = () => {
+    navigate("/admin-dashboard/add-member");
+  };
+
+  const handleDelete = (id) => {
+    deleteUser(id)
+      .then(() => {
+        setMembers((prev) => prev.filter((member) => member.id !== id));
+        toast("Member Deleted Successfully");
+      })
+      .catch((err) => {
+        console.error("Error deleting user:", err);
+      });
+  };
+
+  const filteredMembers = members.filter((member) => {
+    const name = member.firstName + member.lastName;
+    const matchesSearch =
+      name.toLowerCase().includes(searchText.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" || member.status === statusFilter;
+
+    const matchesMembership =
+      membershipFilter === "All" || member.membership === membershipFilter;
+
+    return matchesSearch && matchesStatus && matchesMembership;
   });
 
-  const members = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      joinDate: "2023-01-15",
-      membership: "Premium",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      joinDate: "2023-02-20",
-      membership: "Basic",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Robert Johnson",
-      email: "robert@example.com",
-      joinDate: "2023-03-10",
-      membership: "Gold",
-      status: "Inactive",
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      email: "emily@example.com",
-      joinDate: "2023-04-05",
-      membership: "Premium",
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Michael Brown",
-      email: "michael@example.com",
-      joinDate: "2023-05-12",
-      membership: "Basic",
-      status: "Pending",
-    },
-  ];
+  const rowsWithFullName = filteredMembers.map((member) => ({
+    ...member,
+    name: `${member.firstName} ${member.lastName}`,
+  }));
 
   const columns = [
     {
       field: "id",
       headerName: "ID",
       width: 70,
-      hide: isMobile, // Hide on mobile
+      hide: isMobile,
     },
     {
       field: "name",
       headerName: "Name",
-      width: 150,
-      flex: isMobile ? 1 : undefined, // Make flexible on mobile
+      flex: 1,
+      minWidth: 150,
     },
     {
       field: "email",
       headerName: "Email",
-      width: 200,
-      flex: isMobile ? 1 : undefined,
-      hide: isMobile, // Hide on mobile
+      flex: 1.5,
+      minWidth: 180,
     },
     {
       field: "joinDate",
       headerName: "Join Date",
-      width: 120,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
-    },
-    {
-      field: "membership",
-      headerName: "Membership",
-      width: 120,
-      hide: isMobile, // Hide on mobile
+      minWidth: 130,
     },
     {
       field: "status",
       headerName: "Status",
-      width: 120,
+      minWidth: 110,
       renderCell: (params) => (
         <Box
           sx={{
+            fontWeight: 600,
+            px: 1.5,
+            py: 0.5,
+            borderRadius: 1,
             color:
-              params.value === "Active"
+              params.value === "ACTIVE"
                 ? theme.palette.success.main
-                : params.value === "Pending"
+                : params.value === "PENDING"
                 ? theme.palette.warning.main
                 : theme.palette.error.main,
-            fontWeight: "bold",
+            backgroundColor:
+              params.value === "ACTIVE"
+                ? "rgba(76, 175, 80, 0.1)"
+                : params.value === "Pending"
+                ? "rgba(255, 193, 7, 0.1)"
+                : "rgba(244, 67, 54, 0.1)",
           }}
         >
           {params.value}
@@ -132,17 +153,31 @@ const MemberTable = () => {
     {
       field: "actions",
       headerName: "Actions",
-      width: isMobile ? 100 : 150,
+      minWidth: isMobile ? 100 : 140,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Tooltip title="Edit">
-            <IconButton size="small" color="primary">
-              <EditIcon fontSize={isMobile ? "small" : "medium"} />
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => {
+                setSelectedMember(params.row);
+                setEditDialogOpen(true);
+              }}
+            >
+              <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" color="error">
-              <DeleteIcon fontSize={isMobile ? "small" : "medium"} />
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setMemberToDelete(params.row);
+                setDeleteDialogOpen(true);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
@@ -150,76 +185,212 @@ const MemberTable = () => {
     },
   ];
 
-  const handleAddMember = () => {
-    navigate("/admin-dashboard/add-member");
-  };
-
-  const handleSaveMember = () => {
-    console.log("New member:", newMember);
-    setOpenAddDialog(false);
-    setNewMember({
-      name: "",
-      email: "",
-      joinDate: "",
-      membership: "Basic",
-    });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewMember((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   return (
-    <Box sx={{ p: isMobile ? 1 : 3 }}>
+    <Box sx={{ px: isMobile ? 1 : 3, py: 3 }}>
+      {/* Header and Add Button */}
       <Box
         sx={{
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
-          alignItems: isMobile ? "flex-start" : "center",
+          alignItems: isMobile ? "stretch" : "center",
           mb: 2,
-          gap: isMobile ? 2 : 0,
+          gap: 2,
         }}
       >
-        <Typography variant="h5" sx={{ mb: isMobile ? 1 : 0 }}>
+        <Typography variant="h5" fontWeight={600}>
           Member Management
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleAddMember}
-          size={isMobile ? "small" : "medium"}
           fullWidth={isMobile}
+          size={isMobile ? "small" : "medium"}
+          sx={{ backgroundColor: color.firstColor }}
         >
           Add Member
         </Button>
       </Box>
 
-      <Paper sx={{ p: isMobile ? 1 : 2, overflow: "hidden" }}>
+      {/* Search and Filter */}
+      <Paper
+        elevation={1}
+        sx={{
+          p: 2,
+          mb: 3,
+          borderRadius: 2,
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: 2,
+          alignItems: isMobile ? "stretch" : "center",
+        }}
+      >
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search by name or email..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          size="small"
+        />
+
         <Box
           sx={{
-            height: 500,
-            width: "100%",
-            "& .MuiDataGrid-cell": {
-              padding: isMobile ? "4px" : "8px 16px",
-            },
+            display: "flex",
+            gap: 2,
+            width: isMobile ? "100%" : "auto",
+            flexDirection: isMobile ? "column" : "row",
           }}
         >
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="Status"
+            >
+              <MenuItem value="All">All Status</MenuItem>
+              <MenuItem value="ACTIVE">Active</MenuItem>
+              <MenuItem value="INACTIVE">Inactive</MenuItem>
+              <MenuItem value="PENDING">Pending</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Membership</InputLabel>
+            <Select
+              value={membershipFilter}
+              onChange={(e) => setMembershipFilter(e.target.value)}
+              label="Membership"
+            >
+              <MenuItem value="All">All Types</MenuItem>
+              <MenuItem value="Basic">Basic</MenuItem>
+              <MenuItem value="Premium">Premium</MenuItem>
+              <MenuItem value="Gold">Gold</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
+      {/* Table */}
+      <Paper elevation={3} sx={{ borderRadius: 3, p: 2 }}>
+        <Box sx={{ height: 500, width: "100%" }}>
           <DataGrid
-            rows={members}
+            rows={rowsWithFullName}
             columns={columns}
             pageSize={7}
             rowsPerPageOptions={[7]}
             checkboxSelection
             disableSelectionOnClick
             density={isMobile ? "compact" : "standard"}
+            sx={{
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: theme.palette.grey[100],
+                fontWeight: 600,
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
           />
         </Box>
       </Paper>
+
+      {/* Edit Member Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        fullWidth
+      >
+        <DialogTitle>Edit Member</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <TextField
+            label="First Name"
+            value={selectedMember?.firstName || ""}
+            onChange={(e) =>
+              setSelectedMember({
+                ...selectedMember,
+                firstName: e.target.value,
+              })
+            }
+            fullWidth
+          />
+          <TextField
+            label="Last Name"
+            value={selectedMember?.lastName || ""}
+            onChange={(e) =>
+              setSelectedMember({
+                ...selectedMember,
+                lastName: e.target.value,
+              })
+            }
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            value={selectedMember?.email || ""}
+            onChange={(e) =>
+              setSelectedMember({
+                ...selectedMember,
+                email: e.target.value,
+              })
+            }
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={() => setEditDialogOpen(false)} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete{" "}
+            <strong>
+              {memberToDelete?.firstName} {memberToDelete?.lastName}
+            </strong>
+            ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleDelete(memberToDelete?.id);
+              setDeleteDialogOpen(false);
+            }}
+            variant="contained"
+            color="error"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

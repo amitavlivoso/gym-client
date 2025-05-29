@@ -36,7 +36,7 @@ const AdminDashboard = () => {
         <Typography variant="h4" gutterBottom>
           Admin Dashboard
         </Typography>
-        <PaymentStatus />
+        {/* <PaymentStatus /> */}
         <MemberTable />
         <TrainerTable />
         <ManagerTable />

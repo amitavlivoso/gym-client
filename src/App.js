@@ -7,6 +7,7 @@ import UserDashboard from "./pages/Member/UserDashBoard";
 import AdminDashboard from "./pages/Admin/AdminDashBoard";
 import AdminLayout from "./components/Admin/shared/AdminLayout";
 import AddMember from "./pages/Admin/Member/AddMember";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           {/* Example: <Route path="users" element={<AdminUsers />} /> */}
         </Route>
       </Routes>
+      <ToastContainer />
     </Router>
   );
 }

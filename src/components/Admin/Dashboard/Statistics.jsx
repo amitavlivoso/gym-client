@@ -1,6 +1,17 @@
-import React from "react";
-import { Box, Typography, Tabs, Tab, Paper, useTheme } from "@mui/material";
+import React, { useState } from "react";
 import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  MenuItem,
+  Select,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import {
+  LineChart,
+  Line,
   BarChart,
   Bar,
   XAxis,
@@ -9,156 +20,178 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
-import { DataGrid } from "@mui/x-data-grid";
 
-const weeklyData = [
-  { name: "Mon", paid: 12, pending: 8, failed: 2 },
-  { name: "Tue", paid: 19, pending: 3, failed: 1 },
-  { name: "Wed", paid: 15, pending: 5, failed: 0 },
-  { name: "Thu", paid: 18, pending: 2, failed: 1 },
-  { name: "Fri", paid: 10, pending: 10, failed: 3 },
-  { name: "Sat", paid: 8, pending: 4, failed: 1 },
-  { name: "Sun", paid: 5, pending: 2, failed: 0 },
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+
+const monthlyIncome = [
+  { name: "Jan", income: 1200 },
+  { name: "Feb", income: 1600 },
+  { name: "Mar", income: 1800 },
+  { name: "Apr", income: 900 },
+  { name: "May", income: 2000 },
+  { name: "Jun", income: 1700 },
 ];
 
-const monthlyData = [
-  { name: "Jan", paid: 120, pending: 30, failed: 10 },
-  { name: "Feb", paid: 150, pending: 20, failed: 5 },
-  { name: "Mar", paid: 180, pending: 25, failed: 8 },
-  { name: "Apr", paid: 90, pending: 40, failed: 12 },
-  { name: "May", paid: 200, pending: 15, failed: 5 },
-  { name: "Jun", paid: 170, pending: 30, failed: 7 },
+const weeklyIncome = {
+  Jan: [
+    { name: "Week 1", income: 300 },
+    { name: "Week 2", income: 200 },
+    { name: "Week 3", income: 400 },
+    { name: "Week 4", income: 300 },
+  ],
+  Feb: [
+    { name: "Week 1", income: 400 },
+    { name: "Week 2", income: 400 },
+    { name: "Week 3", income: 400 },
+    { name: "Week 4", income: 400 },
+  ],
+  Mar: [
+    { name: "Week 1", income: 500 },
+    { name: "Week 2", income: 400 },
+    { name: "Week 3", income: 500 },
+    { name: "Week 4", income: 400 },
+  ],
+  Apr: [
+    { name: "Week 1", income: 200 },
+    { name: "Week 2", income: 200 },
+    { name: "Week 3", income: 250 },
+    { name: "Week 4", income: 250 },
+  ],
+  May: [
+    { name: "Week 1", income: 600 },
+    { name: "Week 2", income: 500 },
+    { name: "Week 3", income: 500 },
+    { name: "Week 4", income: 400 },
+  ],
+  Jun: [
+    { name: "Week 1", income: 400 },
+    { name: "Week 2", income: 400 },
+    { name: "Week 3", income: 500 },
+    { name: "Week 4", income: 400 },
+  ],
+};
+
+const monthlyUsers = [
+  { name: "Jan", users: 100 },
+  { name: "Feb", users: 130 },
+  { name: "Mar", users: 160 },
+  { name: "Apr", users: 80 },
+  { name: "May", users: 190 },
+  { name: "Jun", users: 150 },
 ];
 
-const paymentDetails = [
-  { id: 1, user: "John Doe", amount: 100, status: "Paid", date: "2023-05-01" },
-  {
-    id: 2,
-    user: "Jane Smith",
-    amount: 150,
-    status: "Pending",
-    date: "2023-05-02",
-  },
-  {
-    id: 3,
-    user: "Robert Johnson",
-    amount: 200,
-    status: "Failed",
-    date: "2023-05-03",
-  },
-  {
-    id: 4,
-    user: "Emily Davis",
-    amount: 75,
-    status: "Paid",
-    date: "2023-05-04",
-  },
-  {
-    id: 5,
-    user: "Michael Brown",
-    amount: 120,
-    status: "Paid",
-    date: "2023-05-05",
-  },
-];
+const COLORS = ["#10b981", "#f59e0b", "#ef4444"];
 
-const PaymentStatus = () => {
-  const [value, setValue] = React.useState(0);
+const PaymentDashboard = () => {
+  const [selectedMonth, setSelectedMonth] = useState("Jan");
   const theme = useTheme();
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "user", headerName: "User", width: 150 },
-    { field: "amount", headerName: "Amount", width: 100 },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 120,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            color:
-              params.value === "Paid"
-                ? theme.palette.success.main
-                : params.value === "Pending"
-                ? theme.palette.warning.main
-                : theme.palette.error.main,
-            fontWeight: "bold",
-          }}
-        >
-          {params.value}
-        </Box>
-      ),
-    },
-    { field: "date", headerName: "Date", width: 120 },
-  ];
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Payment Status
-      </Typography>
+    <Box sx={{ px: 2, py: 3 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h5" fontWeight={600} gutterBottom>
+          Payment Dashboard
+        </Typography>
+        <Select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          size="small"
+        >
+          {months.map((month) => (
+            <MenuItem key={month} value={month}>
+              {month}
+            </MenuItem>
+          ))}
+        </Select>
+      </Box>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Tabs value={value} onChange={handleChange} aria-label="payment tabs">
-          <Tab label="Weekly" />
-          <Tab label="Monthly" />
-          <Tab label="Details" />
-        </Tabs>
-
-        {value === 0 && (
-          <Box sx={{ height: 400, mt: 2 }}>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2, borderRadius: 3, height: 300 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Monthly Income
+            </Typography>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
+              <LineChart data={monthlyIncome}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="paid" fill={theme.palette.success.main} />
-                <Bar dataKey="pending" fill={theme.palette.warning.main} />
-                <Bar dataKey="failed" fill={theme.palette.error.main} />
-              </BarChart>
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  stroke={theme.palette.primary.main}
+                />
+              </LineChart>
             </ResponsiveContainer>
-          </Box>
-        )}
+          </Paper>
+        </Grid>
 
-        {value === 1 && (
-          <Box sx={{ height: 400, mt: 2 }}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2, borderRadius: 3, height: 300 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Weekly Income - {selectedMonth}
+            </Typography>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
+              <BarChart data={weeklyIncome[selectedMonth]}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="paid" fill={theme.palette.success.main} />
-                <Bar dataKey="pending" fill={theme.palette.warning.main} />
-                <Bar dataKey="failed" fill={theme.palette.error.main} />
+                <Bar dataKey="income" fill={theme.palette.success.main} />
               </BarChart>
             </ResponsiveContainer>
-          </Box>
-        )}
+          </Paper>
+        </Grid>
 
-        {value === 2 && (
-          <Box sx={{ height: 400, width: "100%", mt: 2 }}>
-            <DataGrid
-              rows={paymentDetails}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5]}
-              checkboxSelection
-            />
-          </Box>
-        )}
-      </Paper>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2, borderRadius: 3, height: 300 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Monthly User Visits
+            </Typography>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyUsers}>
+                <defs>
+                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor={theme.palette.primary.main}
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={theme.palette.primary.main}
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="users"
+                  stroke={theme.palette.primary.main}
+                  fillOpacity={1}
+                  fill="url(#colorUsers)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };
 
-export default PaymentStatus;
+export default PaymentDashboard;

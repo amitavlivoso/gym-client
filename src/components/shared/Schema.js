@@ -8,15 +8,12 @@ const loginValidation = Yup.object({
 });
 
 const membervalidationSchema = Yup.object({
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
+  fullName: Yup.string().required("Full name is required"),
+
   role: Yup.string().required("Role is required"),
   status: Yup.string().required("Status is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
   phoneNumber: Yup.string().required("Phone number is required"),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
 });
 
 export { loginValidation, membervalidationSchema };
