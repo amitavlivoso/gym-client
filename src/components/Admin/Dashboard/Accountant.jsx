@@ -24,12 +24,13 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAllUser, deleteUser } from "../../../services/Service";
 import { toast } from "react-toastify";
 
 const AcountantTable = () => {
+  const { role } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -60,7 +61,7 @@ const AcountantTable = () => {
   }, []);
 
   const handleAddTrainer = () => {
-    navigate("/admin-dashboard/add-member");
+    navigate(`/${role}/dashboard/add-accountant`);
   };
 
   const handleConfirmDelete = (id) => {

@@ -8,6 +8,7 @@ import LeadTable from "../../components/Admin/Dashboard/LeadTable";
 import AcountantTable from "../../components/Admin/Dashboard/Accountant";
 import RecepionistTable from "../../components/Admin/Dashboard/Receptionist";
 import HRManagerTable from "../../components/Admin/Dashboard/HrManager";
+import { getUserRoll } from "../../services/axiosClient";
 
 const mockUsers = [
   { id: 1, name: "Alice", email: "alice@example.com", group: "Gold" },
@@ -34,16 +35,22 @@ const AdminDashboard = () => {
     <Box sx={{ display: "flex" }}>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Typography variant="h4" gutterBottom>
-          Admin Dashboard
+          {getUserRoll()}Dashboard
         </Typography>
         {/* <PaymentStatus /> */}
-        <MemberTable />
-        <TrainerTable />
-        <ManagerTable />
-        <LeadTable />
-        <AcountantTable />
-        <RecepionistTable />
-        <HRManagerTable />
+        {getUserRoll() === "Admin" || getUserRoll() === "Receptionist" ? (
+          <>
+            <MemberTable />
+            <TrainerTable />
+            <ManagerTable />
+            <LeadTable />
+            <AcountantTable />
+            <RecepionistTable />
+            <HRManagerTable />
+          </>
+        ) : (
+          <></>
+        )}
       </Box>
     </Box>
   );

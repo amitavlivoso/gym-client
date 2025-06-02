@@ -5,9 +5,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserDashboard from "./pages/Member/UserDashBoard";
 import AdminDashboard from "./pages/Admin/AdminDashBoard";
-import AdminLayout from "./components/Admin/shared/AdminLayout";
-import AddMember from "./pages/Admin/Member/AddMember";
+import RoleLayout from "./components/shared/RoleLayout";
 import { ToastContainer } from "react-toastify";
+import AddMemberDynamic from "./components/shared/AddMemberDynamic";
+import AddMember from "./pages/Admin/Member/AddMember";
+import Dashboard from "./pages/Dashboard";
+import PaymentHistoryTable from "./pages/Member/PaymentHistoryTable";
 
 function App() {
   return (
@@ -21,12 +24,37 @@ function App() {
           <Route path="user-dashboard" element={<UserDashboard />} />
         </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin-dashboard/" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="add-member" element={<AddMember />} />
-
-          {/* Example: <Route path="users" element={<AdminUsers />} /> */}
+        <Route path="/:role/dashboard" element={<RoleLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route
+            path="/:role/dashboard/add-member"
+            element={<AddMember role="Member" />}
+          />
+          <Route
+            path="/:role/dashboard/add-trainer"
+            element={<AddMember role="Trainer" />}
+          />
+          <Route
+            path="/:role/dashboard/add-accountant"
+            element={<AddMember role="Accountant" />}
+          />
+          <Route
+            path="/:role/dashboard/add-hr"
+            element={<AddMember role="HR Manager" />}
+          />
+          <Route
+            path="/:role/dashboard/add-lead"
+            element={<AddMember role="Lead" />}
+          />
+          <Route
+            path="/:role/dashboard/add-manager"
+            element={<AddMember role="Manager" />}
+          />
+          <Route
+            path="/:role/dashboard/add-receptionist"
+            element={<AddMember role="Receptionist" />}
+          />
+          <Route path="member-pay-history" element={<PaymentHistoryTable />} />
         </Route>
       </Routes>
       <ToastContainer />

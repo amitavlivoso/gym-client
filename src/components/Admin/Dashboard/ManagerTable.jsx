@@ -31,6 +31,7 @@ import { toast } from "react-toastify";
 
 const ManagerTable = () => {
   const navigate = useNavigate();
+  const { role } = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -60,7 +61,7 @@ const ManagerTable = () => {
   }, []);
 
   const handleAddTrainer = () => {
-    navigate("/admin-dashboard/add-member");
+    navigate(`/${role}/dashboard/add-manager`);
   };
 
   const handleConfirmDelete = (id) => {

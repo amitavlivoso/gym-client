@@ -62,15 +62,21 @@ export default function Login() {
               };
               Signin(payLoad)
                 .then((res) => {
-                  setCurrentAccessToken(res?.data?.data?.accessToken);
-                  if (res?.data?.data?.role === "Admin") {
-                    window.location.href = "/admin-dashboard";
+                  const accessToken = res?.data?.data?.accessToken;
+                  const role = res?.data?.data?.role?.toLowerCase(); // Convert to lowercase
+
+                  setCurrentAccessToken(accessToken);
+
+                  // Redirect based on lowercase role
+                  if (role) {
+                    window.location.href = `/${role}/dashboard`;
                   } else {
-                    window.location.href = "/user-dashboard";
+                    // fallback if role not present
+                    console.error("Role is missing in response");
                   }
                 })
                 .catch((err) => {
-                  console.log(err);
+                  console.error(err);
                 });
             }}
           >

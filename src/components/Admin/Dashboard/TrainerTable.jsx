@@ -31,6 +31,7 @@ import { toast } from "react-toastify";
 
 const TrainerTable = () => {
   const navigate = useNavigate();
+  const { role } = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -60,7 +61,7 @@ const TrainerTable = () => {
   }, []);
 
   const handleAddTrainer = () => {
-    navigate("/admin-dashboard/add-member");
+    navigate(`/${role}/dashboard/add-trainer`);
   };
 
   const handleConfirmDelete = (id) => {
@@ -121,7 +122,7 @@ const TrainerTable = () => {
           sx={{
             fontWeight: 600,
             color:
-              params.value === "ACTIVATE"
+              params.value === "ACTIVE"
                 ? theme.palette.success.main
                 : params.value === "PENDING"
                 ? theme.palette.warning.main

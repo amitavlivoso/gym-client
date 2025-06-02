@@ -16,3 +16,15 @@ export function editUser(payLoad) {}
 export function deleteUser(id) {
   return client.delete(`/User/delete-record/${id}`);
 }
+
+export function addCheckIn(payLoad) {
+  return client.post("/Attendance/create", payLoad);
+}
+
+export function getAllCheckIn(payLoad) {
+  return client.post("/Attendance/search-record", payLoad);
+}
+
+export function updateCheckOut(payLoad, id) {
+  return client.patch(`/Attendance/update-record/${id}`, payLoad);
+}

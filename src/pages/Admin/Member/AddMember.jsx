@@ -1,4 +1,5 @@
 import { Formik, Form } from "formik";
+import { useState, useEffect } from "react";
 import {
   TextField,
   MenuItem,
@@ -23,6 +24,7 @@ import {
 import { Register } from "../../../services/Service";
 import { membervalidationSchema } from "../../../components/shared/Schema";
 import { toast } from "react-toastify";
+import color from "../../../components/shared/Color";
 
 const roleOptions = [
   "Accountant",
@@ -35,13 +37,18 @@ const roleOptions = [
 ];
 const statusOptions = ["ACTIVE", "INACTIVE"];
 
-const AddMember = () => {
+const AddMember = ({ role }) => {
   const theme = useTheme();
+  const [formState, setFormState] = useState({ role });
+
+  useEffect(() => {
+    setFormState((prev) => ({ ...prev, role }));
+  }, [role]);
 
   const initialValues = {
     fullName: "",
     joinDate: "",
-    role: "Member",
+    role: role,
     status: "ACTIVE",
     email: "",
     phoneNumber: "",
@@ -72,7 +79,7 @@ const AddMember = () => {
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Avatar
             sx={{
-              bgcolor: theme.palette.primary.main,
+              bgcolor: color.firstColor,
               width: 60,
               height: 60,
               margin: "0 auto 16px",
@@ -85,9 +92,9 @@ const AddMember = () => {
             component="h1"
             gutterBottom
             fontWeight={700}
-            color="primary"
+            color={color.firstColor}
           >
-            Add New Member
+            Add New {role}
           </Typography>
           <Typography variant="body1" color="textSecondary">
             Fill in the details below to add a new team member
@@ -399,6 +406,7 @@ const AddMember = () => {
                   sx={{
                     px: 4,
                     borderRadius: 3,
+                    backgroundColor: color.firstColor,
                     minWidth: 180,
                     textTransform: "none",
                     fontWeight: 600,
@@ -411,7 +419,7 @@ const AddMember = () => {
                   {isSubmitting ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    "Create Member"
+                    `Create ${role}`
                   )}
                 </Button>
               </Box>

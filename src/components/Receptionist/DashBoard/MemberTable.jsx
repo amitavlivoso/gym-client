@@ -24,15 +24,13 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteUser, getAllUser } from "../../../services/Service";
 import { toast } from "react-toastify";
 
 const MemberTable = () => {
   const navigate = useNavigate();
-  const { role } = useParams();
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -65,7 +63,7 @@ const MemberTable = () => {
   }, []);
 
   const handleAddMember = () => {
-    navigate(`/${role}/dashboard/add-member`);
+    navigate("/admin-dashboard/add-member");
   };
 
   const handleDelete = (id) => {

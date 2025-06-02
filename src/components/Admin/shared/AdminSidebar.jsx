@@ -17,7 +17,7 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PaymentIcon from "@mui/icons-material/Payment";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
@@ -26,52 +26,92 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import RoomServiceIcon from "@mui/icons-material/RoomService";
 import color from "../../shared/Color";
-
-const navItems = [
-  { text: "Dashboard", icon: <DashboardIcon />, to: "/admin-dashboard" },
-  { text: "Payments", icon: <PaymentIcon />, to: "/admin/payments" },
-  {
-    text: "Add Member",
-    icon: <GroupAddIcon />,
-    to: "/admin-dashboard/add-member",
-  },
-  {
-    text: "Trainer Management",
-    icon: <FitnessCenterIcon />,
-    to: "/admin-dashboard/trainer-management",
-  },
-  {
-    text: "Add Accountant",
-    icon: <AccountBalanceIcon />,
-    to: "/admin-dashboard/add-accountant",
-  },
-  {
-    text: "Add HR Manager",
-    icon: <SupervisorAccountIcon />,
-    to: "/admin-dashboard/add-hr",
-  },
-  {
-    text: "Add Lead",
-    icon: <LeaderboardIcon />,
-    to: "/admin-dashboard/add-lead",
-  },
-  {
-    text: "Add Manager",
-    icon: <ManageAccountsIcon />,
-    to: "/admin-dashboard/add-manager",
-  },
-  {
-    text: "Add Receptionist",
-    icon: <RoomServiceIcon />,
-    to: "/admin-dashboard/add-receptionist",
-  },
-];
+import { getUserRoll } from "../../../services/axiosClient";
 
 const settingsItems = [
   { text: "Settings", icon: <SettingsIcon />, to: "/admin/settings" },
 ];
 
 const AdminSidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
+  const { role } = useParams();
+
+  const navItems =
+    getUserRoll() === "Admin" || getUserRoll() === "Receptionist"
+      ? [
+          {
+            text: "Dashboard",
+            icon: <DashboardIcon />,
+            to: `/${role}/dashboard`,
+          },
+          { text: "Payments", icon: <PaymentIcon />, to: "/admin/payments" },
+          {
+            text: "Add Member",
+            icon: <GroupAddIcon />,
+            to: `/${role}/dashboard/add-member`,
+          },
+          {
+            text: "Add Trainer",
+            icon: <FitnessCenterIcon />,
+            to: `/${role}/dashboard/add-trainer`,
+          },
+          {
+            text: "Add Accountant",
+            icon: <AccountBalanceIcon />,
+            to: `/${role}/dashboard/add-accountant`,
+          },
+          {
+            text: "Add HR Manager",
+            icon: <SupervisorAccountIcon />,
+            to: `/${role}/dashboard/add-hr`,
+          },
+          {
+            text: "Add Lead",
+            icon: <LeaderboardIcon />,
+            to: `/${role}/dashboard/add-lead`,
+          },
+          {
+            text: "Add Manager",
+            icon: <ManageAccountsIcon />,
+            to: `/${role}/dashboard/add-manager`,
+          },
+          {
+            text: "Add Receptionist",
+            icon: <RoomServiceIcon />,
+            to: `/${role}/dashboard/add-receptionist`,
+          },
+        ]
+      : [
+          {
+            text: "Dashboard",
+            icon: <DashboardIcon />,
+            to: `/${role}/dashboard`,
+          },
+          // { text: "Payments", icon: <PaymentIcon />, to: "/admin/payments" },
+          ...(getUserRoll() === "Member"
+            ? [
+                {
+                  text: "Payments",
+                  icon: <PaymentIcon />,
+                  to: "/member/dashboard/member-pay-history",
+                },
+              ]
+            : [
+                {
+                  text: "Payments",
+                  icon: <PaymentIcon />,
+                  to: "/admin/payments",
+                },
+              ]),
+          ...(getUserRoll() !== "Member"
+            ? [
+                {
+                  text: "Add Member",
+                  icon: <GroupAddIcon />,
+                  to: `/${role}/dashboard/add-member`,
+                },
+              ]
+            : []),
+        ];
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
@@ -84,7 +124,7 @@ const AdminSidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
     <Box>
       <Toolbar sx={{ justifyContent: "center", py: 2 }}>
         <Typography variant="h6" fontWeight="bold" color={color.firstColor}>
-          Admin Panel
+          {getUserRoll()} Panel
         </Typography>
       </Toolbar>
       <Divider />

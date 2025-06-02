@@ -17,6 +17,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import color from "../../shared/Color";
+import { getUserRoll, logout } from "../../../services/axiosClient";
 
 const AdminHeader = ({ handleDrawerToggle, drawerWidth }) => {
   const theme = useTheme();
@@ -63,9 +64,10 @@ const AdminHeader = ({ handleDrawerToggle, drawerWidth }) => {
           variant="h6"
           noWrap
           component="div"
+          color={color.firstColor}
           sx={{ flexGrow: 1, fontWeight: 600 }}
         >
-          Admin Dashboard
+          {getUserRoll()} Dashboard
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -104,7 +106,7 @@ const AdminHeader = ({ handleDrawerToggle, drawerWidth }) => {
           >
             <MenuItem>Profile</MenuItem>
             <MenuItem>Settings</MenuItem>
-            <MenuItem>Logout</MenuItem>
+            <MenuItem onClick={() => logout()}>Logout</MenuItem>
           </Menu>
         </Box>
       </Toolbar>

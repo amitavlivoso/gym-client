@@ -31,6 +31,7 @@ import { toast } from "react-toastify";
 
 const HRManagerTable = () => {
   const navigate = useNavigate();
+  const { role } = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -60,7 +61,7 @@ const HRManagerTable = () => {
   }, []);
 
   const handleAddTrainer = () => {
-    navigate("/admin-dashboard/add-member");
+    navigate(`/${role}/dashboard/add-hr`);
   };
 
   const handleConfirmDelete = (id) => {
