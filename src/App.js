@@ -11,6 +11,9 @@ import AddMemberDynamic from "./components/shared/AddMemberDynamic";
 import AddMember from "./pages/Admin/Member/AddMember";
 import Dashboard from "./pages/Dashboard";
 import PaymentHistoryTable from "./pages/Member/PaymentHistoryTable";
+import MemberDetails from "./components/Admin/MemberDetails";
+import PaymentPage from "./components/Admin/Dashboard/Payment";
+import JoinUsForm from "./pages/Member/JoinUs";
 
 function App() {
   return (
@@ -22,6 +25,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />
           <Route path="user-dashboard" element={<UserDashboard />} />
+          <Route path="join" element={<JoinUsForm />} />
         </Route>
 
         <Route path="/:role/dashboard" element={<RoleLayout />}>
@@ -55,6 +59,8 @@ function App() {
             element={<AddMember role="Receptionist" />}
           />
           <Route path="member-pay-history" element={<PaymentHistoryTable />} />
+          <Route path="payment" element={<PaymentPage />} />
+          <Route path="member/:id" element={<MemberDetails />} />
         </Route>
       </Routes>
       <ToastContainer />

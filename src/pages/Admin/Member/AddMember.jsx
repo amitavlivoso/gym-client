@@ -1,4 +1,4 @@
-import { Formik, Form } from "formik";
+import { Formik, Form, useFormikContext } from "formik";
 import { useState, useEffect } from "react";
 import {
   TextField,
@@ -16,15 +16,28 @@ import {
   Person as PersonIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
-  Work as WorkIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  CalendarToday as CalendarTodayIcon,
+  Payment as PaymentIcon,
+  MonetizationOn as MonetizationOnIcon,
 } from "@mui/icons-material";
-import { Register } from "../../../services/Service";
+import {
+  addPayment,
+  Register,
+  getUser,
+  editUser,
+  getPayment,
+  updatePayment,
+} from "../../../services/Service";
 import { membervalidationSchema } from "../../../components/shared/Schema";
 import { toast } from "react-toastify";
 import color from "../../../components/shared/Color";
+import { useLocation } from "react-router-dom";
+
+const planOptions = [
+  { label: "3 Months", value: "3month", price: 3000 },
+  { label: "6 Months", value: "6month", price: 5500 },
+  { label: "9 Months", value: "9month", price: 8000 },
+  { label: "12 Months", value: "12month", price: 10000 },
+];
 
 const roleOptions = [
   "Accountant",
@@ -36,22 +49,72 @@ const roleOptions = [
   "Member",
 ];
 const statusOptions = ["ACTIVE", "INACTIVE"];
+const paymentModeOptions = ["Cash", "Card", "UPI"];
+
+const AutoUpdatePaymentAmount = () => {
+  const { values, setFieldValue } = useFormikContext();
+
+  useEffect(() => {
+    const selectedPlan = planOptions.find(
+      (plan) => plan.value === values.planName
+    );
+    if (selectedPlan) {
+      setFieldValue("paymentAmount", selectedPlan.price);
+    }
+  }, [values.planName, setFieldValue]);
+
+  return null;
+};
 
 const AddMember = ({ role }) => {
   const theme = useTheme();
-  const [formState, setFormState] = useState({ role });
+  const location = useLocation();
+  const userId = location?.state?.id;
+  const isEdit = Boolean(userId);
 
-  useEffect(() => {
-    setFormState((prev) => ({ ...prev, role }));
-  }, [role]);
-
-  const initialValues = {
+  const [formState, setFormState] = useState({
     fullName: "",
     joinDate: "",
     role: role,
     status: "ACTIVE",
     email: "",
     phoneNumber: "",
+    planName: "",
+    paymentAmount: "",
+    paymentMode: "",
+  });
+
+  useEffect(() => {
+    if (isEdit) {
+      getUser(userId).then((res) => {
+        const data = res?.data?.data;
+        if (data) {
+          setFormState({
+            fullName: `${data.firstName} ${data.lastName}`,
+            joinDate: data.joinDate?.split("T")[0] || "",
+            role: data.role || role,
+            status: data.status,
+            email: data.email,
+            phoneNumber: data.phoneNumber,
+            planName: data.planName || "",
+            paymentAmount: data.paymentAmount || "",
+            paymentMode: data.paymentMode || "",
+          });
+        }
+      });
+    }
+  }, [isEdit, userId, role]);
+
+  const initialValues = {
+    fullName: formState.fullName,
+    joinDate: formState.joinDate,
+    role: formState.role,
+    status: formState.status,
+    email: formState.email,
+    phoneNumber: formState.phoneNumber,
+    planName: formState.planName,
+    paymentAmount: formState.paymentAmount,
+    paymentMode: formState.paymentMode,
   };
 
   return (
@@ -94,22 +157,24 @@ const AddMember = ({ role }) => {
             fontWeight={700}
             color={color.firstColor}
           >
-            Add New {role}
+            {isEdit ? `Edit ${role}` : `Add New ${role}`}
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Fill in the details below to add a new team member
+            {isEdit
+              ? "Update the details below to edit the user"
+              : "Fill in the details below to add a new team member"}
           </Typography>
         </Box>
 
         <Formik
+          enableReinitialize
           initialValues={initialValues}
           validationSchema={membervalidationSchema}
-          onSubmit={(values, { setSubmitting, resetForm }) => {
-            // Split fullName into firstName and lastName
+          onSubmit={async (values, { setSubmitting, resetForm }) => {
             const [firstName, ...rest] = values.fullName.trim().split(" ");
             const lastName = rest.join(" ");
 
-            const payLoad = {
+            const payload = {
               firstName,
               lastName,
               email: values.email,
@@ -120,16 +185,46 @@ const AddMember = ({ role }) => {
               password: "123456",
             };
 
-            Register(payLoad)
-              .then((res) => {
-                // console.log("Registered:", res);
-                toast(res?.data?.msg);
-                resetForm();
-              })
-              .catch((err) => {
-                console.error("Registration Error:", err);
-              })
-              .finally(() => setSubmitting(false));
+            try {
+              const res = isEdit
+                ? await editUser(userId, payload)
+                : await Register(payload);
+              const id = userId || res?.data?.data?.id || res?.data?.user?.id;
+
+              toast.success(
+                res?.data?.msg ||
+                  (isEdit ? "User Updated Successfully" : "User Registered")
+              );
+
+              if (!isEdit && values.role === "Member" && id) {
+                const paymentPayload = {
+                  userId: id,
+                  planName: values.planName,
+                  amount: values.paymentAmount,
+                  method: values.paymentMode,
+                };
+
+                try {
+                  const paymentRes = await getPayment(id);
+                  const existingPayment = paymentRes?.data?.data;
+
+                  if (existingPayment?.id) {
+                    await updatePayment(existingPayment.id, paymentPayload);
+                  } else {
+                    await addPayment(paymentPayload);
+                  }
+                } catch (paymentError) {
+                  console.error("❌ Payment Error:", paymentError);
+                }
+              }
+
+              resetForm();
+            } catch (err) {
+              console.error("Error:", err);
+              toast.error("Something went wrong. Please try again.");
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
           {({
@@ -143,7 +238,8 @@ const AddMember = ({ role }) => {
             dirty,
           }) => (
             <Form>
-              {/* Full Name Field */}
+              <AutoUpdatePaymentAmount />
+
               <Box sx={{ mb: 3 }}>
                 <TextField
                   label="Full Name"
@@ -158,27 +254,13 @@ const AddMember = ({ role }) => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PersonIcon
-                          color={
-                            touched.fullName
-                              ? errors.fullName
-                                ? "error"
-                                : "primary"
-                              : "action"
-                          }
-                        />
+                        <PersonIcon />
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
                   }}
                 />
               </Box>
 
-              {/* Contact Fields */}
               <Box
                 sx={{
                   display: "flex",
@@ -190,8 +272,8 @@ const AddMember = ({ role }) => {
                 <TextField
                   label="Email"
                   name="email"
-                  fullWidth
                   type="email"
+                  fullWidth
                   variant="outlined"
                   value={values.email}
                   onChange={handleChange}
@@ -201,22 +283,9 @@ const AddMember = ({ role }) => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailIcon
-                          color={
-                            touched.email
-                              ? errors.email
-                                ? "error"
-                                : "primary"
-                              : "action"
-                          }
-                        />
+                        <EmailIcon />
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
                   }}
                 />
 
@@ -233,27 +302,13 @@ const AddMember = ({ role }) => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PhoneIcon
-                          color={
-                            touched.phoneNumber
-                              ? errors.phoneNumber
-                                ? "error"
-                                : "primary"
-                              : "action"
-                          }
-                        />
+                        <PhoneIcon />
                       </InputAdornment>
                     ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
                   }}
                 />
               </Box>
 
-              {/* Role, Status, Join Date */}
               <Box
                 sx={{
                   display: "flex",
@@ -267,36 +322,13 @@ const AddMember = ({ role }) => {
                   fullWidth
                   label="Role"
                   name="role"
-                  variant="outlined"
                   value={values.role}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.role && Boolean(errors.role)}
-                  helperText={touched.role && errors.role}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <WorkIcon
-                          color={
-                            touched.role
-                              ? errors.role
-                                ? "error"
-                                : "primary"
-                              : "action"
-                          }
-                        />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
-                  }}
                 >
-                  {roleOptions.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role}
+                  {roleOptions.map((r) => (
+                    <MenuItem key={r} value={r}>
+                      {r}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -306,34 +338,13 @@ const AddMember = ({ role }) => {
                   fullWidth
                   label="Status"
                   name="status"
-                  variant="outlined"
                   value={values.status}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.status && Boolean(errors.status)}
-                  helperText={touched.status && errors.status}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
-                  }}
                 >
                   {statusOptions.map((status) => (
                     <MenuItem key={status} value={status}>
-                      <Box display="flex" alignItems="center">
-                        {status === "ACTIVE" ? (
-                          <CheckCircleIcon
-                            color="success"
-                            sx={{ mr: 1, fontSize: 20 }}
-                          />
-                        ) : (
-                          <ErrorIcon
-                            color="error"
-                            sx={{ mr: 1, fontSize: 20 }}
-                          />
-                        )}
-                        {status}
-                      </Box>
+                      {status}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -347,32 +358,79 @@ const AddMember = ({ role }) => {
                   value={values.joinDate}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.joinDate && Boolean(errors.joinDate)}
-                  helperText={touched.joinDate && errors.joinDate}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarTodayIcon
-                          color={
-                            touched.joinDate
-                              ? errors.joinDate
-                                ? "error"
-                                : "primary"
-                              : "action"
-                          }
-                        />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                    },
-                  }}
                 />
               </Box>
 
-              {/* Action Buttons */}
+              {values.role === "Member" && !isEdit && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 3,
+                    mb: 3,
+                  }}
+                >
+                  <TextField
+                    select
+                    label="Plan Name"
+                    name="planName"
+                    fullWidth
+                    variant="outlined"
+                    value={values.planName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PaymentIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  >
+                    {planOptions.map((plan) => (
+                      <MenuItem key={plan.value} value={plan.value}>
+                        {plan.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    label="Payment Amount (₹)"
+                    name="paymentAmount"
+                    type="number"
+                    fullWidth
+                    variant="outlined"
+                    value={values.paymentAmount}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <MonetizationOnIcon />
+                        </InputAdornment>
+                      ),
+                      readOnly: true,
+                    }}
+                  />
+
+                  <TextField
+                    select
+                    label="Payment Mode"
+                    name="paymentMode"
+                    fullWidth
+                    value={values.paymentMode}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  >
+                    {paymentModeOptions.map((mode) => (
+                      <MenuItem key={mode} value={mode}>
+                        {mode}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+              )}
+
               <Box
                 mt={5}
                 sx={{
@@ -386,38 +444,22 @@ const AddMember = ({ role }) => {
                   variant="outlined"
                   color="secondary"
                   size="large"
-                  sx={{
-                    px: 4,
-                    borderRadius: 3,
-                    minWidth: 180,
-                    textTransform: "none",
-                    fontWeight: 600,
-                  }}
                   onClick={() => window.history.back()}
                 >
                   Cancel
                 </Button>
+
                 <Button
                   variant="contained"
                   color="primary"
                   type="submit"
                   size="large"
                   disabled={isSubmitting || !isValid || !dirty}
-                  sx={{
-                    px: 4,
-                    borderRadius: 3,
-                    backgroundColor: color.firstColor,
-                    minWidth: 180,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
-                    "&:hover": {
-                      boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
-                    },
-                  }}
                 >
                   {isSubmitting ? (
                     <CircularProgress size={24} color="inherit" />
+                  ) : isEdit ? (
+                    `Update ${role}`
                   ) : (
                     `Create ${role}`
                   )}

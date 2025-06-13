@@ -1,4 +1,3 @@
-import React from "react";
 import { Paper, Typography, Box, Chip } from "@mui/material";
 import { BarChart, CheckCircle, Schedule } from "@mui/icons-material";
 import {
@@ -17,6 +16,7 @@ const WeeklyActivityChart = ({
   calculateWeeklyStats,
   formatMinutes,
 }) => {
+  console.log(weeklyData);
   return (
     <Paper
       elevation={3}

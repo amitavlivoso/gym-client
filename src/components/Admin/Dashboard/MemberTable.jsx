@@ -26,6 +26,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { deleteUser, getAllUser } from "../../../services/Service";
 import { toast } from "react-toastify";
 
@@ -158,14 +159,27 @@ const MemberTable = () => {
       minWidth: isMobile ? 100 : 140,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
+          <Tooltip title="View">
+            <IconButton
+              size="small"
+              color="info"
+              onClick={() =>
+                navigate(`/${role}/dashboard/member/${params.row.id}`, {
+                  state: {
+                    name: params.row.name,
+                    email: params.row.email,
+                  },
+                })
+              }
+            >
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Edit">
             <IconButton
               size="small"
               color="primary"
-              onClick={() => {
-                setSelectedMember(params.row);
-                setEditDialogOpen(true);
-              }}
+              onClick={() =>navigate(`/${role}/dashboard/add-member`,{state:{id:params.row.id}})}
             >
               <EditIcon fontSize="small" />
             </IconButton>

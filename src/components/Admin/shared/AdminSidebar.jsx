@@ -43,7 +43,11 @@ const AdminSidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle }) => {
             icon: <DashboardIcon />,
             to: `/${role}/dashboard`,
           },
-          { text: "Payments", icon: <PaymentIcon />, to: "/admin/payments" },
+          {
+            text: "Payments",
+            icon: <PaymentIcon />,
+            to: "/admin/dashboard/payment",
+          },
           {
             text: "Add Member",
             icon: <GroupAddIcon />,
