@@ -6,6 +6,7 @@ import Hero from "../../components/Member/Hero";
 
 import StatsCard from "../../components/Member/StatCard";
 import Service from "../../components/Member/Service";
+import Pricing from "../../components/Member/Pricing";
 
 const images = [
   "/assets/HeroImage1.png",
@@ -37,17 +38,13 @@ export default function Home() {
   return (
     <>
       <Box>
-        <Box />
-        <Box />
-        <Hero onNext={handleNext} onPrev={handlePrev} />
+        
+        <Hero  />
+        
       </Box>
 
       {/* Rest of your components */}
-      <Box component="main">
-        {/* <Pricing /> */}
-        <StatsCard />
-        <Service />
-      </Box>
+      <Box component="main"></Box>
     </>
   );
 }

@@ -1,81 +1,93 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/images/livosologo.png";
+import { Link as ScrollLink } from "react-scroll";
 
-const Header = () => {
+function Header() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [scrolled, setScrolled] = useState(false);
+  const isHomePage = location.pathname === "/";
+  const shouldShowBg = isHomePage ? scrolled : true;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navLinkClass = (path) =>
+    `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+      location.pathname === path
+        ? "border-[#ff6f59] text-white"
+        : "border-transparent text-white hover:border-gray-300 hover:text-gray-200"
+    }`;
+
   return (
-    <header className="bg-white shadow-sm py-4 px-5">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo - replace with your actual logo */}
+    <div
+      className={`z-50 fixed w-full top-0 left-0 transition-all duration-300 ${
+        shouldShowBg ? "bg-black shadow-md" : "bg-transparent"
+      }`}
+    >
+      <nav>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center h-16 justify-between">
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/" className="flex items-center">
+                <img
+                  src={logo}
+                  alt="Livoso Logo"
+                  className="h-20 w-auto object-contain"
+                />
+              </Link>
+            </div>
 
-        <div className="text-xl font-bold">LOGO</div>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link to="/" className={navLinkClass("/")}>
+                Home
+              </Link>
 
-        {/* Navigation Links */}
+              <Link to="/join" className={navLinkClass("/join")}>
+                Join
+              </Link>
 
-        <nav className="hidden md:flex space-x-8">
-          <Link
-            to="/"
-            className="text-gray-800 font-semibold text-xl hover:text-pink-600 transition-colors"
-          >
-            Home
-          </Link>
+              <ScrollLink
+                to="pricing"
+                smooth={true}
+                duration={500}
+                offset={-70} // if you have a fixed header
+                className={navLinkClass("/price")}
+                style={{ cursor: "pointer" }}
+              >
+                Pricing
+              </ScrollLink>
 
-          <a
-            href="#"
-            className="text-gray-800 font-semibold text-xl hover:text-pink-600 transition-colors"
-          >
-            About Us
-          </a>
+              <Link to="/about" className={navLinkClass("/about")}>
+                About
+              </Link>
 
-          <a
-            href="#"
-            className="text-gray-800 font-semibold text-xl hover:text-pink-600 transition-colors"
-          >
-            Gallery
-          </a>
+              <Link to="/contact" className={navLinkClass("/contact")}>
+                Contact
+              </Link>
+            </div>
 
-          <a
-            href="#"
-            className="text-gray-800 font-semibold text-xl hover:text-pink-600 transition-colors"
-          >
-            Category
-          </a>
-
-          <a
-            href="#"
-            className="text-gray-800 font-semibold text-xl hover:text-pink-600 transition-colors"
-          >
-            Contact Us
-          </a>
-
-          <Link
-            to="/login"
-            className=" font-semibold text-lg hover:text-pink-600 transition-colors bg-pink-600 hover:bg-white border text-white px-9 py-1 rounded-2xl "
-          >
-            Login
-          </Link>
-        </nav>
-
-        {/* Mobile menu button - hidden on desktop */}
-
-        <button className="md:hidden text-gray-800">
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </div>
-    </header>
+            <div>
+              <button
+                onClick={() => navigate("/login")}
+                className="text-white rounded-full px-4 py-1 bg-[#ff6f59] hover:bg-[#ff543e]"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
   );
-};
+}
 
 export default Header;

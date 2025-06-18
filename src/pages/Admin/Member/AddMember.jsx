@@ -120,11 +120,12 @@ const AddMember = ({ role }) => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "30vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         p: 2,
+        mb:3
       }}
     >
       <Paper

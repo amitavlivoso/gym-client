@@ -14,6 +14,11 @@ import PaymentHistoryTable from "./pages/Member/PaymentHistoryTable";
 import MemberDetails from "./components/Admin/MemberDetails";
 import PaymentPage from "./components/Admin/Dashboard/Payment";
 import JoinUsForm from "./pages/Member/JoinUs";
+import PaymentCardPage from "./pages/Member/paymentCard";
+import MemberTable from "./components/Admin/Dashboard/MemberTable";
+import TrainerTable from "./components/Admin/Dashboard/TrainerTable";
+import AboutUs from "./components/Member/AboutUs";
+import ContactUs from "./components/Member/ContactUs";
 
 function App() {
   return (
@@ -26,6 +31,9 @@ function App() {
           <Route path="register" element={<Signup />} />
           <Route path="user-dashboard" element={<UserDashboard />} />
           <Route path="join" element={<JoinUsForm />} />
+          <Route path="paymentpage" element={<PaymentCardPage />} />
+          <Route path="about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Route>
 
         <Route path="/:role/dashboard" element={<RoleLayout />}>
@@ -61,6 +69,8 @@ function App() {
           <Route path="member-pay-history" element={<PaymentHistoryTable />} />
           <Route path="payment" element={<PaymentPage />} />
           <Route path="member/:id" element={<MemberDetails />} />
+          <Route path="member-table" element={<MemberTable />} />
+          <Route path="trainer-table" element={<TrainerTable />} />
         </Route>
       </Routes>
       <ToastContainer />

@@ -18,10 +18,12 @@ import {
   Wc,
   LocationOn,
   Event,
-  Contacts,
+  Lock,
 } from "@mui/icons-material";
 import { Register } from "../../services/Service";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import color from "../../components/shared/Color";
 
 const genderOptions = ["Male", "Female", "Other"];
 
@@ -33,7 +35,12 @@ const validationSchema = Yup.object().shape({
   gender: Yup.string().required("Gender is required"),
   dob: Yup.string().required("Date of birth is required"),
   address: Yup.string().required("Address is required"),
-  emergencyContact: Yup.string().required("Emergency contact is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
 });
 
 const JoinUsForm = () => {
@@ -45,16 +52,23 @@ const JoinUsForm = () => {
     gender: "",
     dob: "",
     address: "",
-    emergencyContact: "",
-    password: "123456", // default or generate
+    password: "",
+    confirmPassword: "",
     role: "Member",
     joinDate: new Date().toISOString().split("T")[0],
   };
+  const navigate = useNavigate();
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const { confirmPassword, ...submitValues } = values;
+    // console.log(submitValues);
     try {
-      const res = await Register(values);
-      toast.success(res?.data?.msg || "You have joined successfully!");
+      const res = await Register(submitValues);
+
+      if (res.data.status_code === "CREATED") {
+        toast.success(res?.data?.msg || "You have joined successfully!");
+        navigate("/paymentpage");
+      }
       resetForm();
     } catch (err) {
       toast.error("Failed to submit. Please try again.");
@@ -65,10 +79,10 @@ const JoinUsForm = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", mt: 5, px: 2 }}>
+    <Box sx={{ display: "flex", justifyContent: "center", m: 10, px: 2 }}>
       <Paper elevation={4} sx={{ maxWidth: 600, width: "100%", p: 4 }}>
         <Box sx={{ textAlign: "center", mb: 3 }}>
-          <Avatar sx={{ bgcolor: "primary.main", mx: "auto", mb: 1 }}>
+          <Avatar sx={{ bgcolor: color.firstColor, mx: "auto", mb: 1 }}>
             <Person />
           </Avatar>
           <Typography variant="h5" fontWeight={600}>
@@ -230,20 +244,41 @@ const JoinUsForm = () => {
 
               <TextField
                 fullWidth
-                label="Emergency Contact"
-                name="emergencyContact"
+                label="Password"
+                name="password"
+                type="password"
                 sx={{ mb: 2 }}
-                value={values.emergencyContact}
+                value={values.password}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={
-                  touched.emergencyContact && Boolean(errors.emergencyContact)
-                }
-                helperText={touched.emergencyContact && errors.emergencyContact}
+                error={touched.password && Boolean(errors.password)}
+                helperText={touched.password && errors.password}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Contacts />
+                      <Lock />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                sx={{ mb: 3 }}
+                value={values.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={
+                  touched.confirmPassword && Boolean(errors.confirmPassword)
+                }
+                helperText={touched.confirmPassword && errors.confirmPassword}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock />
                     </InputAdornment>
                   ),
                 }}
@@ -255,6 +290,9 @@ const JoinUsForm = () => {
                 color="primary"
                 fullWidth
                 disabled={isSubmitting}
+                sx={{
+                  backgroundColor: color.firstColor,
+                }}
               >
                 Join Now
               </Button>

@@ -1,120 +1,149 @@
-"use client";
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Avatar,
-  Rating,
-  Card,
-  CardContent,
-  CardHeader,
-} from "@mui/material";
+import { useState } from "react";
+
+import StarIcon from "@mui/icons-material/Star";
+
+import Teacher1 from "../../assets/image/teacher1.jpg";
+
+import Teacher2 from "../../assets/image/teacher2.jpg";
 
 const testimonials = [
   {
-    name: "Ravi Sharma",
-    rating: 5,
-    feedback:
-      "I've lost 10kg and feel stronger than ever. Amazing trainers and support!",
-    avatar: "/assets/avatar1.jpg",
-  },
-  {
-    name: "Priya Mehta",
+    id: 1,
+
+    name: "John Daven",
+
+    text: "Excellent Yoga classes of all levels. Many teachers are amazing. I love Bernie Clark. I have many of my therapy patients join Yoga International.",
+
     rating: 4,
-    feedback:
-      "Love the 24/7 access and personalized workout plans. Highly recommended!",
-    avatar: "/assets/avatar2.jpg",
+
+    image: Teacher1,
   },
+
   {
-    name: "Amit Patel",
+    id: 2,
+
+    name: "Sarah Johnson",
+
+    text: "The variety of classes and instructors is incredible. I've been practicing for years and still discover new techniques and approaches here.",
+
     rating: 5,
-    feedback:
-      "Biometric check-ins are smooth, and WhatsApp updates keep me on track.",
-    avatar: "/assets/avatar3.jpg",
+
+    image: Teacher2,
+  },
+
+  {
+    id: 3,
+
+    name: "Mike Chen",
+
+    text: "As a beginner, I was nervous about starting yoga. The supportive community and excellent instruction made all the difference.",
+
+    rating: 5,
+
+    image: Teacher2,
+  },
+
+  {
+    id: 4,
+
+    name: "Emily Rodriguez",
+
+    text: "The online platform is user-friendly and the quality of instruction is top-notch. Highly recommend for practitioners of all levels.",
+
+    rating: 4,
+
+    image: Teacher2,
   },
 ];
 
-export default function Testimonials() {
+export default function TestimonialsCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
+  const renderStars = (rating) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <StarIcon
+        key={index}
+        className={`w-4 h-4 ${
+          index < rating
+            ? "fill-orange-400 text-orange-400"
+            : "fill-gray-200 text-gray-200"
+        }`}
+      />
+    ));
+  };
+
   return (
-    <Box
-      sx={{
-        py: 10,
-        backgroundColor: "#000",
-        color: "#fff",
-        textAlign: "center",
-      }}
-    >
-      <Container maxWidth="lg">
-        <Typography
-          variant="h3"
-          sx={{
-            fontWeight: 800,
-            mb: 6,
-            color: "#FFD700",
-            textTransform: "uppercase",
-          }}
-        >
-          Member Testimonials
-        </Typography>
-        <Grid container spacing={6}>
-          {testimonials.map((item, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card
-                sx={{
-                  height: "100%",
-                  backgroundColor: "#1a1a1a",
-                  border: "2px solid #FFD700",
-                  borderRadius: 3,
-                  boxShadow: "0px 4px 20px rgba(255, 215, 0, 0.1)",
-                  transition: "transform 0.3s",
-                  "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow: "0px 6px 30px rgba(255, 215, 0, 0.2)",
-                  },
-                }}
-              >
-                <CardHeader
-                  avatar={
-                    <Avatar
-                      alt={item.name}
-                      src={item.avatar}
-                      sx={{ width: 56, height: 56 }}
-                    />
-                  }
-                  title={
-                    <Typography variant="h6" sx={{ color: "#FFD700" }}>
-                      {item.name}
-                    </Typography>
-                  }
-                  subheader={
-                    <Rating
-                      value={item.rating}
-                      readOnly
-                      sx={{ color: "#FFD700" }}
-                    />
-                  }
-                  sx={{
-                    borderBottom: "1px solid #333",
-                    mb: 2,
-                    px: 3,
-                    pt: 3,
-                    pb: 0,
-                  }}
-                />
-                <CardContent>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "#ccc", lineHeight: 1.6 }}
-                  >
-                    {item.feedback}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+    <div className="bg-gray-50 py-16 px-4 relative overflow-hidden">
+      <div className="max-w-4xl mx-auto text-center">
+        {/* Header */}
+
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Testimonials
+          </h2>
+
+          <p className="text-gray-600 text-sm">what members are saying</p>
+        </div>
+
+        {/* Testimonial Card */}
+
+        <div className="bg-white rounded-2xl shadow-lg p-8 mx-auto max-w-3xl relative">
+          <div className="flex items-center">
+            {/* Profile Image */}
+
+            <div className="mb-6">
+              <img
+                src={testimonials[currentIndex].image || "/placeholder.svg"}
+                alt={testimonials[currentIndex].name}
+                width={80}
+                height={80}
+                className="rounded-full object-cover h-[110px] w-[200px]"
+              />
+            </div>
+
+            <div className="ps-4">
+              {/* Testimonial Text */}
+
+              <p className="text-gray-700 text-lg leading-relaxed mb-6 text-left">
+                {testimonials[currentIndex].text}
+              </p>
+
+              {/* Rating */}
+
+              <div className="flex items-center gap-1 mb-1 justify-start">
+                {renderStars(testimonials[currentIndex].rating)}
+              </div>
+
+              {/* Name */}
+
+              <h3 className="text-gray-900 font-semibold text-lg flex justify-start ">
+                {testimonials[currentIndex].name}
+              </h3>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Dots */}
+
+        <div className="flex justify-center gap-2 mt-8">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+                index === currentIndex
+                  ? "bg-orange-400"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+              aria-label={`Go to testimonial ${index + 1}`}
+            />
           ))}
-        </Grid>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }

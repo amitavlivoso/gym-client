@@ -1,5 +1,5 @@
 const color = {
-  firstColor: "#C64EB7",
+  firstColor: "#566fe2",
   //Written colors
   secondColor: "#d81e5b",
   buttonColor: "linear-gradient(35deg, #E46783 7%, #B844CF 100%)",
