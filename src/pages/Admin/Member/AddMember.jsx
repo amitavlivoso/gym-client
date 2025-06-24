@@ -30,7 +30,7 @@ import {
 import { membervalidationSchema } from "../../../components/shared/Schema";
 import { toast } from "react-toastify";
 import color from "../../../components/shared/Color";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const planOptions = [
   { label: "3 Months", value: "3month", price: 3000 },
@@ -116,6 +116,7 @@ const AddMember = ({ role }) => {
     paymentAmount: formState.paymentAmount,
     paymentMode: formState.paymentMode,
   };
+  const navigate=useNavigate()
 
   return (
     <Box
@@ -211,6 +212,7 @@ const AddMember = ({ role }) => {
 
                   if (existingPayment?.id) {
                     await updatePayment(existingPayment.id, paymentPayload);
+                   
                   } else {
                     await addPayment(paymentPayload);
                   }

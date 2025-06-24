@@ -52,3 +52,15 @@ export function getPayment(userId) {
 export function updatePayment(id, payLoad) {
   return client.get(`/Payment/update-record/${id}`, payLoad);
 }
+
+export function createOrder(payload) {
+  return client.post(`/pay/orders`, payload);
+}
+
+export function verifyPayment(payload) {
+  return client.post(`/pay/verify`, payload);
+}
+
+export function createPayment(payLoad) {
+  return client.post("/Payment/create", payLoad);
+}

@@ -134,7 +134,11 @@ import {
   AccountCircle as AccountCircleIcon,
 } from "@mui/icons-material";
 import logo from "../../assets/images/livosologo.png";
-import { getUserName, getUserRoll, logout } from "../../../services/axiosClient";
+import {
+  getUserName,
+  getUserRoll,
+  logout,
+} from "../../../services/axiosClient";
 import { Link } from "react-router-dom";
 import DateRangeSelector from "./DateRangeSelector";
 import { getAllPayment, getUser } from "../../../services/Service";
@@ -534,15 +538,16 @@ const AdminHeader = () => {
                   <span className="small">Welcome</span>
                   <h6 className="m-0">{getUserName() || "User"}</h6>
                 </div>
-                {
-                  getUserRoll()==="Admin"?(<>
-                   <div className="d-flex flex-column text-end">
-                  <h5 className="fw-bold lh-1 m-0">{totalPayments}</h5>
-                  <div className="text-primary small">Earning Earnings</div>
-                </div>
-                  </>):(<></>)
-                }
-               
+                {getUserRoll() === "Admin" ? (
+                  <>
+                    <div className="d-flex flex-column text-end">
+                      <h5 className="fw-bold lh-1 m-0">{totalPayments}</h5>
+                      <div className="text-primary small">Earning Earnings</div>
+                    </div>
+                  </>
+                ) : (
+                  <></>
+                )}
               </div>
               <div className="mx-3 my-2 d-grid">
                 <button onClick={() => logout()} className="btn btn-primary">
@@ -559,32 +564,31 @@ const AdminHeader = () => {
       <div className="app-hero-header d-flex align-items-center">
         {/* Breadcrumb starts */}
         <ol className="breadcrumb">
-          {/* <li className="breadcrumb-item">  */}
-          <Link href="/">
+          <Link to="/">
             <HomeIcon />
           </Link>
-          {/* </li> */}
           <li className="breadcrumb-item text-primary" aria-current="page">
             {window.location.pathname.split("/").filter(Boolean).join(" / ")}
           </li>
         </ol>
         {/* Breadcrumb ends */}
 
-        {/* Sales stats starts */}
-        {/* <div className="ms-auto d-lg-flex d-none flex-row">
-          <div className="input-group">
-            <span className="input-group-text bg-primary-lighten">
-              <CalendarIcon className="text-primary" />
-            </span>
-            <input
-              type="text"
-              id="abc"
-              className="form-control custom-daterange"
-            />
+        {/* 7 Days to Renew Message */}
+        <div className="ms-auto d-lg-flex d-none flex-row">
+          <div className="d-flex align-items-center border px-3 py-2 rounded bg-light text-dark">
+            {getUserRoll() === "Admin" ? (
+              <>
+                <CalendarIcon className="text-primary me-2" />
+                <span className="fw-semibold">7 Days to Renew</span>
+              </>
+            ) : (
+              <>
+                <CalendarIcon className="text-primary me-2" />
+                <span className="fw-semibold">7 Days to Renew</span>
+              </>
+            )}
           </div>
-        </div> */}
-        <DateRangeSelector />
-        {/* Sales stats ends */}
+        </div>
       </div>
     </div>
   );

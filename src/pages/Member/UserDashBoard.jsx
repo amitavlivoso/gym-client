@@ -20,12 +20,14 @@ import QuickActions from "../../components/Member/DashBoard/QuickActions";
 import {
   addCheckIn,
   getAllCheckIn,
+  getPayment,
   updateCheckOut,
 } from "../../services/Service";
 import { getUserId } from "../../services/axiosClient";
 
 export default function UserDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
+  const [membershipInfo, setMembershipInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkingIn, setCheckingIn] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -36,6 +38,8 @@ export default function UserDashboard() {
     message: "",
     severity: "success",
   });
+
+  
 
   const fetchDashboardData = () => {
     const userId = getUserId();
@@ -78,6 +82,20 @@ export default function UserDashboard() {
       });
   };
 
+  console.log(getUserId());
+  useEffect(() => {
+    getPayment(getUserId())
+      .then((res) => {
+        console.log(res)
+        setMembershipInfo(res?.data?.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  console.log(membershipInfo);
+
   const updateDashboardStats = (sessions) => {
     // Step 1: Compute duration for each session from checkInTime & checkOutTime
     const sessionsWithDuration = sessions.map((s) => {
@@ -103,7 +121,7 @@ export default function UserDashboard() {
     setDashboardData({
       sessionCount: sessionsWithDuration.length,
       totalMinutes: totalDuration,
-      membershipEndsAt: "2025-07-15", // ideally from API
+      membershipEndsAt: "2025-07-15",
       monthlySessions: sessionsWithDuration.filter(
         (s) => new Date(s.createdAt) >= new Date(new Date().setDate(1))
       ).length,
@@ -137,10 +155,43 @@ export default function UserDashboard() {
     return "Evening (6-9 PM)";
   };
 
-  const calculateCurrentStreak = (sessions) => {
-    // Implement streak calculation logic
-    return 3;
-  };
+const calculateCurrentStreak = (sessions) => {
+  if (!sessions || sessions.length === 0) return 0;
+  
+  // Get unique dates in YYYY-MM-DD format and sort them newest first
+  const uniqueDates = [...new Set(
+    sessions.map(s => new Date(s.checkInTime || s.createdAt).toISOString().split('T')[0])
+  )].sort((a, b) => new Date(b) - new Date(a));
+
+  let streak = 0;
+  let currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0); // Normalize to midnight
+  
+  // If most recent session was today, start counting
+  if (uniqueDates[0] === currentDate.toISOString().split('T')[0]) {
+    streak = 1;
+    currentDate.setDate(currentDate.getDate() - 1); // Move to yesterday
+  } else {
+    return 0; // No session today means no current streak
+  }
+
+  // Check consecutive days
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prevDate = new Date(uniqueDates[i]);
+    prevDate.setHours(0, 0, 0, 0);
+    
+    if (prevDate.getTime() === currentDate.getTime()) {
+      streak++;
+      currentDate.setDate(currentDate.getDate() - 1);
+    } else {
+      break; // Streak broken
+    }
+  }
+  
+  return streak;
+};
+  
+
 
   const calculateCaloriesBurned = (totalMinutes) => {
     // Simple estimation: 10 calories per minute
@@ -389,9 +440,7 @@ export default function UserDashboard() {
             </Grid>
 
             <Grid item xs={12} sm={6} md={3} lg={3} xl={3}>
-              <MembershipCard
-                membershipEndsAt={dashboardData.membershipEndsAt}
-              />
+              <MembershipCard memberShipInfo={membershipInfo} />
             </Grid>
 
             <Grid item xs={12} sm={6} md={3} lg={3} xl={3}>

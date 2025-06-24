@@ -10,9 +10,6 @@ import {
   Stack,
   Chip,
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import PaymentIcon from "@mui/icons-material/Payment";
 import {
   LineChart,
   Line,
@@ -27,9 +24,10 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  getAllCheckIn,
+  
   getMemberWithAttendance,
   getUser,
+  getAllPayment,
 } from "../../services/Service";
 
 const MemberDetails = () => {
@@ -37,66 +35,30 @@ const MemberDetails = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [member, setMember] = useState({});
+  const [user, setUser] = useState({});
   const [attendance, setAttendance] = useState([]);
   const [payments, setPayments] = useState([]);
 
-  useEffect(() => {
-    setMember({
-      id: id,
-      firstName: "Amitav",
-      lastName: "Pusty",
-      email: "amitav@example.com",
-      status: "Active",
-      membership: "Gold",
-    });
-
-    setAttendance([
-      { date: "2025-06-01", status: 1 },
-      { date: "2025-06-02", status: 1 },
-      { date: "2025-06-03", status: 0 },
-      { date: "2025-06-04", status: 1 },
-      { date: "2025-06-05", status: 1 },
-      { date: "2025-06-06", status: 0 },
-      { date: "2025-06-07", status: 1 },
-    ]);
-
-    setPayments([
-      { month: "January", amount: 1000 },
-      { month: "February", amount: 1200 },
-      { month: "March", amount: 1000 },
-      { month: "April", amount: 1200 },
-      { month: "May", amount: 1000 },
-    ]);
-  }, [id]);
-
-  const [user, setUser] = useState({});
+  // Fetch user info
   useEffect(() => {
     getUser(id).then((res) => {
-      setUser(res?.data?.data);
+      setUser(res?.data?.data || {});
     });
-  }, []);
+  }, [id]);
 
-  const paymentTotal = payments.reduce((sum, p) => sum + p.amount, 0);
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
-  const params = useParams();
-
-  console.log(params.id);
-  const userId = params.id;
+  // Fetch attendance data for last 7 days
   useEffect(() => {
+    const userId = id;
     getMemberWithAttendance({ userId }).then((res) => {
       const allRecords = res?.data?.data || [];
 
-      // Generate the last 7 days
       const today = new Date();
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(today);
-        d.setDate(d.getDate() - (6 - i)); // 6 - i to make dates oldest -> newest
-        return d.toISOString().split("T")[0]; // format YYYY-MM-DD
+        d.setDate(d.getDate() - (6 - i));
+        return d.toISOString().split("T")[0];
       });
 
-      // Map each day to status (1 if record exists, else 0)
       const attendanceData = last7Days.map((date) => {
         const record = allRecords.find((r) => r.date === date);
         return { date, status: record ? 1 : 0 };
@@ -104,7 +66,49 @@ const MemberDetails = () => {
 
       setAttendance(attendanceData);
     });
-  }, [userId]);
+  }, [id]);
+
+  // Fetch and process payment data month-wise
+  useEffect(() => {
+    const payload = {
+      data: { filter: "", userId: id },
+      page: 0,
+      pageSize: 100,
+      order: [["paidAt", "DESC"]],
+    };
+
+    getAllPayment(payload)
+      .then((res) => {
+        const rows = res?.data?.data?.rows || [];
+
+        const monthMap = {};
+
+        rows.forEach((payment) => {
+          if (!payment.paidAt || !payment.amount) return;
+
+          const date = new Date(payment.paidAt);
+          const month = date.toLocaleString("default", { month: "long" });
+
+          if (!monthMap[month]) {
+            monthMap[month] = 0;
+          }
+          monthMap[month] += payment.amount;
+        });
+
+        const processed = Object.entries(monthMap).map(([month, amount]) => ({
+          month,
+          amount,
+        }));
+
+        setPayments(processed);
+      })
+      .catch((err) => {
+        console.error("Error fetching payments:", err);
+      });
+  }, [id]);
+
+  const paymentTotal = payments.reduce((sum, p) => sum + p.amount, 0);
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AA66CC"];
 
   return (
     <Box p={isMobile ? 2 : 4}>
@@ -126,7 +130,7 @@ const MemberDetails = () => {
         <Grid container spacing={3} alignItems="center">
           <Grid item>
             <Avatar sx={{ width: 80, height: 80, bgcolor: "#1976d2" }}>
-              {user.firstName}
+              {user.firstName?.[0] || "U"}
             </Avatar>
           </Grid>
           <Grid item xs>
@@ -135,8 +139,11 @@ const MemberDetails = () => {
             </Typography>
             <Typography color="text.secondary">{user.email}</Typography>
             <Stack direction="row" spacing={1} mt={1}>
-              <Chip label={member.status} color="success" />
-              <Chip label={`Plan: ${member.membership}`} color="primary" />
+              <Chip label="Active" color="success" />
+              <Chip
+                label={`Plan: ${user.membership || "N/A"}`}
+                color="primary"
+              />
             </Stack>
           </Grid>
         </Grid>
@@ -168,28 +175,34 @@ const MemberDetails = () => {
       </Typography>
       <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
         <Typography variant="h6" mb={2}>
-          Total Paid: ₹{paymentTotal}
+          Total Paid: ₹{paymentTotal.toLocaleString()}
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={payments}
-              dataKey="amount"
-              nameKey="month"
-              outerRadius={90}
-              label
-            >
-              {payments.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
+        {payments.length > 0 ? (
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={payments}
+                dataKey="amount"
+                nameKey="month"
+                outerRadius={90}
+                label
+              >
+                {payments.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No payment records found.
+          </Typography>
+        )}
       </Paper>
     </Box>
   );

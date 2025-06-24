@@ -1,46 +1,44 @@
-
-import React from "react";
+import React, { useState } from "react";
 import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   DirectionsRun as RunIcon,
   FitnessCenter as FitnessCenterIcon,
   Restaurant as RestaurantIcon,
-  CalendarToday as CalendarIcon,
   Payment as PaymentIcon,
-  Groups as GroupsIcon,
-  Settings as SettingsIcon,
-  HelpOutline as HelpIcon,
-  Phone as PhoneIcon,
-  Class as ClassIcon,
   PersonAdd as PersonAddIcon,
-  Receipt as ReceiptIcon,
-  Equalizer as EqualizerIcon,
-  Notifications as NotificationsIcon,
-  ChevronRight as ChevronRightIcon,
-  Menu as MenuIcon,
   AccountBalance as AccountBalanceIcon,
   SupervisorAccount as SupervisorAccountIcon,
   Leaderboard as LeaderboardIcon,
   ManageAccounts as ManageAccountsIcon,
   RoomService as RoomServiceIcon,
+  ChevronRight as ChevronRightIcon,
+  Menu as MenuIcon,
+  Phone as PhoneIcon,
+  CheckCircle as ActiveMemberIcon, // For Active Members
+  Cancel as InactiveMemberIcon, // For Inactive Members
+  EventAvailable as AttendanceIcon, // For Attendance
 } from "@mui/icons-material";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { getUserName, getUserRoll } from "../../../services/axiosClient";
 import "../../assets/css/main.min.css";
 import logo from "../../assets/images/livosologo.png";
-import { Drawer, useMediaQuery, useTheme } from "@mui/material";
+import "./adminsidebar.css";
 
-
-const AdminSidebar = ({  handleDrawerToggle }) => {
+const AdminSidebar = ({ handleDrawerToggle }) => {
   const { role } = useParams();
   const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState({});
 
-  const isActive = (path) => {
-    return location.pathname === path;
+  const isActive = (path) => location.pathname === path;
+
+  const toggleExpand = (text) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [text]: !prev[text],
+    }));
   };
 
-  
   const getInitials = () => {
     const name = getUserName() || "User";
     const parts = name.split(" ");
@@ -50,10 +48,6 @@ const AdminSidebar = ({  handleDrawerToggle }) => {
     }
     return initials;
   };
-
-  const settingsItems = [
-    { text: "Settings", icon: <SettingsIcon />, to: "/admin/settings" },
-  ];
 
   const navItems =
     getUserRoll() === "Admin" || getUserRoll() === "Receptionist"
@@ -69,49 +63,82 @@ const AdminSidebar = ({  handleDrawerToggle }) => {
             to: "/admin/dashboard/payment",
           },
           {
-            text: "Add Member",
-            icon: <PersonAddIcon />,
-            to: `/${role}/dashboard/add-member`,
-          },
-          {
-            text: "Add Trainer",
-            icon: <RunIcon />,
-            to: `/${role}/dashboard/add-trainer`,
-          },
-          {
-            text: "Add Accountant",
-            icon: <AccountBalanceIcon />,
-            to: `/${role}/dashboard/add-accountant`,
-          },
-          {
-            text: "Add HR Manager",
-            icon: <SupervisorAccountIcon />,
-            to: `/${role}/dashboard/add-hr`,
-          },
-          {
-            text: "Add Lead",
-            icon: <LeaderboardIcon />,
-            to: `/${role}/dashboard/add-lead`,
-          },
-          {
-            text: "Add Manager",
-            icon: <ManageAccountsIcon />,
-            to: `/${role}/dashboard/add-manager`,
-          },
-          {
-            text: "Add Receptionist",
-            icon: <RoomServiceIcon />,
-            to: `/${role}/dashboard/add-receptionist`,
-          },
-          {
-            text: "Members",
+            text: "Member",
             icon: <PeopleIcon />,
-            to: `/${role}/dashboard/member-table`,
+            subItems: [
+              {
+                text: "Add Member",
+                icon: <PersonAddIcon />,
+                to: `/${role}/dashboard/add-member`,
+              },
+              {
+                text: "All Members",
+                icon: <PeopleIcon />,
+                to: `/${role}/dashboard/member-table`,
+              },
+              {
+                text: "Active Members",
+                icon: <ActiveMemberIcon />,
+                to: `/${role}/dashboard/active-member`,
+              },
+              {
+                text: "Inactive Members",
+                icon: <InactiveMemberIcon />,
+                to: `/${role}/dashboard/inactive-member`,
+              },
+              {
+                text: "Attendance",
+                icon: <AttendanceIcon />,
+                to: `/${role}/dashboard/attendance`,
+              },
+            ],
           },
           {
-            text: "Trainers",
+            text: "Trainer",
             icon: <RunIcon />,
-            to: `/${role}/dashboard/trainer-table`,
+            subItems: [
+              {
+                text: "Add Trainer",
+                icon: <RunIcon />,
+                to: `/${role}/dashboard/add-trainer`,
+              },
+              {
+                text: "Trainers",
+                icon: <RunIcon />,
+                to: `/${role}/dashboard/trainer-table`,
+              },
+            ],
+          },
+          {
+            text: "Staff",
+            icon: <SupervisorAccountIcon />,
+            subItems: [
+              {
+                text: "Add Accountant",
+                icon: <AccountBalanceIcon />,
+                to: `/${role}/dashboard/add-accountant`,
+              },
+              {
+                text: "Add HR Manager",
+                icon: <SupervisorAccountIcon />,
+                to: `/${role}/dashboard/add-hr`,
+              },
+              {
+                text: "Add Lead",
+                icon: <LeaderboardIcon />,
+                to: `/${role}/dashboard/add-lead`,
+              },
+              {
+                text: "Add Manager",
+                icon: <ManageAccountsIcon />,
+                to: `/${role}/dashboard/add-manager`,
+              },
+              {
+                text: "Add Receptionist",
+                icon: <RoomServiceIcon />,
+                to: `/${role}/dashboard/add-receptionist`,
+              },
+            ],
           },
           {
             text: "Workout Plans",
@@ -149,7 +176,7 @@ const AdminSidebar = ({  handleDrawerToggle }) => {
                   icon: <PaymentIcon />,
                   to: "/admin/payments",
                 },
-                  {
+                {
                   text: "Workout Plans",
                   icon: <FitnessCenterIcon />,
                   to: `/${role}/workouts`,
@@ -158,14 +185,20 @@ const AdminSidebar = ({  handleDrawerToggle }) => {
           ...(getUserRoll() !== "Member"
             ? [
                 {
-                  text: "Add Member",
-                  icon: <PersonAddIcon />,
-                  to: `/${role}/dashboard/add-member`,
-                },
-                {
-                  text: "Members",
+                  text: "Member",
                   icon: <PeopleIcon />,
-                  to: `/${role}/members`,
+                  subItems: [
+                    {
+                      text: "Add Member",
+                      icon: <PersonAddIcon />,
+                      to: `/${role}/dashboard/add-member`,
+                    },
+                    {
+                      text: "Members",
+                      icon: <PeopleIcon />,
+                      to: `/${role}/members`,
+                    },
+                  ],
                 },
               ]
             : []),
@@ -227,37 +260,60 @@ const AdminSidebar = ({  handleDrawerToggle }) => {
                 key={index}
                 className={`${isActive(item.to) ? "active current-page" : ""} ${
                   item.subItems ? "treeview" : ""
+                } ${
+                  item.subItems && expandedItems[item.text] ? "expanded" : ""
                 }`}
               >
-                <Link to={item.to || "#"}>
-                  {item.icon &&
-                    React.cloneElement(item.icon, { className: "me-2" })}
-                  <span className="menu-text">{item.text}</span>
-                  {item.subItems && (
-                    <ChevronRightIcon className="treeview-indicator" />
-                  )}
-                </Link>
-                {item.subItems && (
-                  <ul className="treeview-menu">
-                    {item.subItems.map((subItem, subIndex) => (
-                      <li key={subIndex}>
-                        <Link
-                          to={subItem.to}
-                          className={isActive(subItem.to) ? "active" : ""}
-                        >
-                          {subItem.icon &&
-                            React.cloneElement(subItem.icon, {
-                              className: "me-2",
-                            })}
-                          <span className="menu-text">{subItem.text}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                {item.subItems ? (
+                  <>
+                    <div
+                      className="menu-item-wrapper"
+                      onClick={() => toggleExpand(item.text)}
+                    >
+                      <span className="menu-item-content">
+                        {item.icon &&
+                          React.cloneElement(item.icon, { className: "me-2" })}
+                        <span className="menu-text">{item.text}</span>
+                        <ChevronRightIcon
+                          className={`treeview-indicator ${
+                            expandedItems[item.text] ? "rotated" : ""
+                          }`}
+                        />
+                      </span>
+                    </div>
+                    <ul
+                      className="treeview-menu"
+                      style={{
+                        display: expandedItems[item.text] ? "block" : "none",
+                      }}
+                    >
+                      {item.subItems.map((subItem, subIndex) => (
+                        <li key={subIndex}>
+                          <Link
+                            to={subItem.to}
+                            className={isActive(subItem.to) ? "active" : ""}
+                          >
+                            {subItem.icon &&
+                              React.cloneElement(subItem.icon, {
+                                className: "me-2",
+                              })}
+                            <span className="menu-text">{subItem.text}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <Link to={item.to} className="menu-item-wrapper">
+                    <span className="menu-item-content">
+                      {item.icon &&
+                        React.cloneElement(item.icon, { className: "me-2" })}
+                      <span className="menu-text">{item.text}</span>
+                    </span>
+                  </Link>
                 )}
               </li>
             ))}
-            
           </ul>
         </div>
 

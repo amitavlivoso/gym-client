@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,15 @@ import {
   Tooltip,
   useMediaQuery,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Divider,
+  DialogActions,
+  Button,
+  Snackbar,
+  Alert,
+  Grid
 } from "@mui/material";
 import {
   Receipt as ReceiptIcon,
@@ -22,88 +31,162 @@ import {
   CheckCircle as CheckCircleIcon,
   Pending as PendingIcon,
   Error as ErrorIcon,
+  Download,
+  Email,
+  WhatsApp,
 } from "@mui/icons-material";
+import { getUserId } from "../../services/axiosClient";
+import { getAllPayment } from "../../services/Service";
 
 const PaymentHistoryTable = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [payments, setPayments] = useState([]);
+  const [openReceipt, setOpenReceipt] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  // Sample payment data
-  const payments = [
-    {
-      id: "PAY-78901",
-      date: "2023-06-15",
-      amount: 99.99,
-      method: "Credit Card",
-      status: "Completed",
-      type: "Membership Renewal",
-      card: "•••• •••• •••• 4242",
-    },
-    {
-      id: "PAY-78902",
-      date: "2023-05-10",
-      amount: 29.99,
-      method: "PayPal",
-      status: "Completed",
-      type: "Personal Training",
-      card: "paypal@example.com",
-    },
-    {
-      id: "PAY-78903",
-      date: "2023-04-05",
-      amount: 99.99,
-      method: "Credit Card",
-      status: "Failed",
-      type: "Membership Renewal",
-      card: "•••• •••• •••• 4242",
-    },
-    {
-      id: "PAY-78904",
-      date: "2023-03-28",
-      amount: 49.99,
-      method: "Bank Transfer",
-      status: "Pending",
-      type: "Supplement Purchase",
-      card: "ACCT •••• 6789",
-    },
-    {
-      id: "PAY-78905",
-      date: "2023-02-15",
-      amount: 99.99,
-      method: "Credit Card",
-      status: "Completed",
-      type: "Membership Renewal",
-      card: "•••• •••• •••• 4242",
-    },
-  ];
+  useEffect(() => {
+    const payload = {
+      data: { filter: "", userId: getUserId() },
+      page: 0,
+      pageSize: 50,
+      order: [["createdAt", "DESC"]],
+    };
+    getAllPayment(payload)
+      .then((res) => {
+        setPayments(res?.data?.data?.rows || []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch payments:", err);
+        setSnackbar({
+          open: true,
+          message: "Failed to fetch payment history",
+          severity: "error",
+        });
+      });
+  }, []);
+
+  const handleViewReceipt = (payment) => {
+    setSelectedPayment(payment);
+    setOpenReceipt(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setOpenReceipt(false);
+    setSelectedPayment(null);
+  };
+
+  const handleDownloadReceipt = (payment) => {
+    const receiptContent = `
+      Payment Receipt
+      ===============
+      
+      Payment ID: ${payment.id}
+      Plan: ${payment.planName}
+      Amount: ₹${payment.amount.toLocaleString()}
+      Status: ${payment.status}
+      Method: ${payment.method}
+      Paid On: ${new Date(payment.paidAt).toLocaleDateString()}
+      Valid Till: ${new Date(payment.expiresAt).toLocaleDateString()}
+    `;
+    
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `receipt_${payment.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setSnackbar({
+      open: true,
+      message: "Receipt downloaded successfully",
+      severity: "success",
+    });
+  };
+
+  const handleEmailReceipt = (payment) => {
+    const emailSubject = `Payment Receipt #${payment.id}`;
+    const emailBody = `Dear Member,
+
+Here is your payment receipt details:
+
+Payment ID: ${payment.id}
+Plan: ${payment.planName}
+Amount: ₹${payment.amount.toLocaleString()}
+Status: ${payment.status}
+Payment Method: ${payment.method}
+Paid On: ${new Date(payment.paidAt).toLocaleDateString()}
+Valid Till: ${new Date(payment.expiresAt).toLocaleDateString()}
+
+Thank you for your payment!`;
+
+    window.open(`mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`);
+    
+    setSnackbar({
+      open: true,
+      message: "Email client opened with receipt details",
+      severity: "success",
+    });
+  };
+
+  const handleWhatsAppReceipt = (payment) => {
+    const message = `*Payment Receipt #${payment.id}*
+
+*Plan:* ${payment.planName}
+*Amount:* ₹${payment.amount.toLocaleString()}
+*Status:* ${payment.status}
+*Method:* ${payment.method}
+*Paid On:* ${new Date(payment.paidAt).toLocaleDateString()}
+*Valid Till:* ${new Date(payment.expiresAt).toLocaleDateString()}`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+    
+    setSnackbar({
+      open: true,
+      message: "WhatsApp opened with receipt details",
+      severity: "success",
+    });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const getStatusChip = (status) => {
     switch (status) {
-      case "Completed":
+      case "PAID":
         return (
           <Chip
             icon={<CheckCircleIcon fontSize="small" />}
-            label={status}
+            label="Paid"
             color="success"
             size="small"
             variant="outlined"
           />
         );
-      case "Pending":
+      case "PENDING":
         return (
           <Chip
             icon={<PendingIcon fontSize="small" />}
-            label={status}
+            label="Pending"
             color="warning"
             size="small"
             variant="outlined"
           />
         );
-      case "Failed":
+      case "FAILED":
         return (
           <Chip
             icon={<ErrorIcon fontSize="small" />}
-            label={status}
+            label="Failed"
             color="error"
             size="small"
             variant="outlined"
@@ -118,7 +201,7 @@ const PaymentHistoryTable = () => {
     switch (method) {
       case "Credit Card":
         return <CreditCardIcon fontSize="small" />;
-      case "PayPal":
+      case "Razorpay":
         return <PaymentIcon fontSize="small" />;
       case "Bank Transfer":
         return <ReceiptIcon fontSize="small" />;
@@ -140,16 +223,16 @@ const PaymentHistoryTable = () => {
             <TableRow sx={{ backgroundColor: theme.palette.grey[100] }}>
               <TableCell sx={{ fontWeight: "bold" }}>Payment ID</TableCell>
               {!isMobile && (
-                <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+                <>
+                  <TableCell sx={{ fontWeight: "bold" }}>Paid On</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Valid Till</TableCell>
+                </>
               )}
               <TableCell sx={{ fontWeight: "bold" }}>Amount</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Method</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
               {!isMobile && (
-                <>
-                  <TableCell sx={{ fontWeight: "bold" }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Details</TableCell>
-                </>
+                <TableCell sx={{ fontWeight: "bold" }}>Plan</TableCell>
               )}
               <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
@@ -162,39 +245,71 @@ const PaymentHistoryTable = () => {
                     {payment.id}
                   </Typography>
                 </TableCell>
+
                 {!isMobile && (
-                  <TableCell>
-                    {new Date(payment.date).toLocaleDateString()}
-                  </TableCell>
+                  <>
+                    <TableCell>
+                      {new Date(payment.paidAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(payment.expiresAt).toLocaleDateString()}
+                    </TableCell>
+                  </>
                 )}
+
                 <TableCell>
                   <Typography fontWeight="bold">
-                    ${payment.amount.toFixed(2)}
+                    ₹{payment.amount.toLocaleString()}
                   </Typography>
                 </TableCell>
+
                 <TableCell>
                   <Box display="flex" alignItems="center">
                     {getMethodIcon(payment.method)}
                     <Typography sx={{ ml: 1 }}>{payment.method}</Typography>
                   </Box>
                 </TableCell>
+
                 <TableCell>{getStatusChip(payment.status)}</TableCell>
+
                 {!isMobile && (
-                  <>
-                    <TableCell>{payment.type}</TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {payment.card}
-                      </Typography>
-                    </TableCell>
-                  </>
+                  <TableCell>
+                    <Typography variant="body2">{payment.planName}</Typography>
+                  </TableCell>
                 )}
+
                 <TableCell>
-                  <Tooltip title="View receipt">
-                    <IconButton size="small" color="primary">
-                      <ReceiptIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <Box display="flex">
+                    <Tooltip title="Download Receipt">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleDownloadReceipt(payment)}
+                        sx={{ mr: 1 }}
+                      >
+                        <Download fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Email Receipt">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleEmailReceipt(payment)}
+                        sx={{ mr: 1 }}
+                      >
+                        <Email fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Share via WhatsApp">
+                      <IconButton
+                        size="small"
+                        color="success"
+                        onClick={() => handleWhatsAppReceipt(payment)}
+                      >
+                        <WhatsApp fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -202,38 +317,20 @@ const PaymentHistoryTable = () => {
         </Table>
       </TableContainer>
 
-      {/* Mobile view alternative */}
-      {isMobile && (
-        <Box sx={{ mt: 2 }}>
-          {payments.map((payment) => (
-            <Paper key={payment.id} sx={{ p: 2, mb: 2 }} elevation={2}>
-              <Box display="flex" justifyContent="space-between">
-                <Typography fontWeight="bold">{payment.id}</Typography>
-                <Typography color="text.secondary">
-                  {new Date(payment.date).toLocaleDateString()}
-                </Typography>
-              </Box>
-              <Box mt={1} display="flex" justifyContent="space-between">
-                <Box>
-                  <Typography variant="body2">{payment.type}</Typography>
-                  <Box display="flex" alignItems="center" mt={0.5}>
-                    {getMethodIcon(payment.method)}
-                    <Typography variant="body2" sx={{ ml: 1 }}>
-                      {payment.card}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box textAlign="right">
-                  <Typography fontWeight="bold">
-                    ${payment.amount.toFixed(2)}
-                  </Typography>
-                  {getStatusChip(payment.status)}
-                </Box>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

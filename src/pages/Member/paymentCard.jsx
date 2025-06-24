@@ -12,6 +12,10 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { toast } from "react-toastify";
+import RenderRazorpay from "../../components/Payment/RenderPayment";
+import { createOrder } from "../../services/Service";
+import { getUserId } from "../../services/axiosClient";
+import { useLocation } from "react-router-dom";
 
 const plans = [
   {
@@ -20,6 +24,7 @@ const plans = [
     price: 499,
     duration: "1 Month",
     features: ["Gym Access", "1 Free Trainer Session"],
+    popular: false,
   },
   {
     id: "standard",
@@ -27,6 +32,7 @@ const plans = [
     price: 1299,
     duration: "3 Months",
     features: ["Gym Access", "3 Trainer Sessions", "Diet Plan"],
+    popular: true, // most popular
   },
   {
     id: "premium",
@@ -39,113 +45,230 @@ const plans = [
       "Diet Plan",
       "Merchandise Pack",
     ],
+    popular: false,
   },
 ];
 
 const PaymentCardPage = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [orderDetails, setOrderDetails] = useState(null);
   const theme = useTheme();
+  const location = useLocation();
+  const userId = location.state?.userId;
+  console.log(userId);
 
   const handleSelect = (id) => {
     setSelectedPlan(id);
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!selectedPlan) {
       toast.warn("Please select a membership plan!");
       return;
     }
 
     const plan = plans.find((p) => p.id === selectedPlan);
-    toast.success(`Proceeding to payment for: ${plan.name}`);
-    console.log("Payment initiated for plan:", plan);
+    toast.info(`Processing payment for: ${plan.name}`);
+
+    try {
+      const payLoad = {
+        amount: plan.price,
+        currency: "INR",
+      };
+
+      const response = await createOrder(payLoad);
+
+      setOrderDetails({
+        ...response.data.data,
+        selectedPlan: plan,
+      });
+    } catch (err) {
+      console.error("Razorpay order creation failed:", err);
+      toast.error("Payment initialization failed. Try again.");
+    }
   };
 
   return (
-    <Box sx={{ py: 6, px: 2, background: "#f4f6f8", minHeight: "100vh" }}>
-      <Box maxWidth="xl" mx="auto">
-        <Typography
-          variant="h4"
-          textAlign="center"
-          fontWeight={800}
-          gutterBottom
-        >
-          Choose Your Membership Plan
-        </Typography>
+    <Box
+      sx={{
+        py: { xs: 3, sm: 6 },
+        px: { xs: 1, sm: 2 },
+        background: "radial-gradient(circle at top, #f8f9ff, #eef1ff)",
+        minHeight: "100vh",
+      }}
+    >
+      <Box maxWidth="xl" mx="auto" mt={4}>
+        <Box textAlign="center" mb={{ xs: 4, sm: 6 }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            gutterBottom
+            sx={{
+              fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+              background: "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            Choose Your Livoso Plan
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
+            sx={{
+              maxWidth: "600px",
+              mx: "auto",
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+            }}
+          >
+            Select the perfect plan to power your fitness journey with premium
+            benefits and expert guidance
+          </Typography>
+        </Box>
 
-        <Typography
-          variant="subtitle1"
-          textAlign="center"
-          mb={5}
-          color="text.secondary"
+        <Grid
+          container
+          spacing={4}
+          justifyContent="center"
+          alignItems="stretch"
         >
-          Select the best plan to power your fitness goals
-        </Typography>
-
-        <Grid container spacing={4} justifyContent="center">
           {plans.map((plan) => (
-            <Grid item xs={12} sm={6} md={4} key={plan.id}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={plan.id}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                order: plan.popular ? 1 : plan.id === "basic" ? 0 : 2,
+              }}
+            >
               <Card
                 onClick={() => handleSelect(plan.id)}
                 sx={{
-                  height: "100%",
                   width: "100%",
+                  maxWidth: "400px",
+                  height: "100%",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  background: "rgba(255, 255, 255, 0.85)",
-                  backdropFilter: "blur(12px)",
+                  background:
+                    selectedPlan === plan.id
+                      ? "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,247,255,0.95))"
+                      : "rgba(255,255,255,0.95)",
+                  borderRadius: "16px",
                   border:
                     selectedPlan === plan.id
-                      ? "3px solid #1976d2"
-                      : "1px solid #ddd",
-                  boxShadow: selectedPlan === plan.id ? 8 : 2,
-                  borderRadius: 4,
+                      ? "2px solid #2575fc"
+                      : plan.popular
+                      ? "2px solid #6a11cb"
+                      : "1px solid rgba(0,0,0,0.08)",
+                  boxShadow:
+                    selectedPlan === plan.id
+                      ? "0 20px 30px rgba(37,117,252,0.2)"
+                      : plan.popular
+                      ? "0 30px 50px rgba(106,17,203,0.25)"
+                      : "0 10px 20px rgba(0,0,0,0.05)",
                   cursor: "pointer",
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  transition: "0.3s",
+                  position: "relative",
+                  transform:
+                    selectedPlan === plan.id ? "translateY(-4px)" : "none",
                   "&:hover": {
-                    boxShadow: 10,
-                    transform: "scale(1.03)",
+                    transform: "translateY(-6px)",
+                    boxShadow: "0 25px 40px rgba(37,117,252,0.25)",
                   },
                 }}
               >
-                <CardContent>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>
-                    {plan.name}
-                  </Typography>
-                  <Typography variant="h3" color="primary" fontWeight={900}>
-                    ₹{plan.price}
-                  </Typography>
-                  <Typography
-                    variant="subtitle2"
-                    color="text.secondary"
-                    gutterBottom
+                {/* {plan.popular && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: -50,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      bgcolor: "#6a11cb",
+                      color: "#fff",
+                      px: 2.5,
+                      py: 0.5,
+                      borderRadius: "20px",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      boxShadow: "0 4px 10px rgba(106,17,203,0.3)",
+                      zIndex: 2,
+                    }}
                   >
-                    {plan.duration}
+                    MOST POPULAR
+                  </Box>
+                )} */}
+
+                <CardContent>
+                  <Typography variant="h5" fontWeight={700}>
+                    {plan.name}
+                    {selectedPlan === plan.id && (
+                      <CheckCircleIcon
+                        fontSize="small"
+                        color="primary"
+                        sx={{ ml: 1 }}
+                      />
+                    )}
                   </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  {plan.features.map((feature, index) => (
-                    <Box
-                      key={index}
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                      mb={1}
+
+                  <Box sx={{ display: "flex", alignItems: "flex-end", my: 1 }}>
+                    <Typography
+                      variant="h3"
+                      fontWeight={800}
+                      sx={{
+                        background:
+                          selectedPlan === plan.id
+                            ? "linear-gradient(90deg, #6a11cb, #2575fc)"
+                            : "linear-gradient(90deg, #333, #555)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
                     >
-                      <CheckCircleIcon fontSize="small" color="success" />
-                      <Typography variant="body2">{feature}</Typography>
-                    </Box>
-                  ))}
+                      ₹{plan.price}
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                      / {plan.duration}
+                    </Typography>
+                  </Box>
+
+                  <Divider sx={{ my: 2 }} />
+
+                  <Box>
+                    {plan.features.map((feature, index) => (
+                      <Box
+                        key={index}
+                        display="flex"
+                        alignItems="center"
+                        mb={1}
+                      >
+                        <CheckCircleIcon
+                          fontSize="small"
+                          color="success"
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography>{feature}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
                 </CardContent>
-                <CardActions sx={{ mt: "auto", p: 2 }}>
+
+                <CardActions sx={{ px: 3, pb: 3 }}>
                   <Button
                     fullWidth
                     variant={
                       selectedPlan === plan.id ? "contained" : "outlined"
                     }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(plan.id);
+                    }}
                     color="primary"
-                    onClick={() => handleSelect(plan.id)}
-                    sx={{ fontWeight: 600 }}
                   >
                     {selectedPlan === plan.id ? "Selected" : "Choose Plan"}
                   </Button>
@@ -155,17 +278,51 @@ const PaymentCardPage = () => {
           ))}
         </Grid>
 
+        {/* Payment Button */}
         <Box mt={6} textAlign="center">
           <Button
             variant="contained"
             color="success"
             size="large"
             onClick={handlePayment}
-            sx={{ px: 5, py: 1.5, fontSize: "1.1rem", fontWeight: 700 }}
+            disabled={!selectedPlan}
+            sx={{
+              px: 6,
+              py: 1.5,
+              fontSize: "1.1rem",
+              fontWeight: 700,
+              borderRadius: "14px",
+              background: selectedPlan
+                ? "linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)"
+                : "rgba(0,0,0,0.1)",
+              color: "white",
+              boxShadow: selectedPlan
+                ? "0 10px 25px rgba(37,117,252,0.4)"
+                : "none",
+              "&:hover": {
+                background: selectedPlan
+                  ? "linear-gradient(90deg, #5a0db4 0%, #1c6ae4 100%)"
+                  : "rgba(0,0,0,0.1)",
+              },
+              "&:disabled": {
+                background: "rgba(0,0,0,0.05)",
+                color: "rgba(0,0,0,0.25)",
+              },
+            }}
           >
-            Continue to Payment
+            {selectedPlan ? "Continue to Payment" : "Select a Plan"}
           </Button>
         </Box>
+
+        {/* Razorpay Payment Trigger */}
+        {orderDetails && (
+          <RenderRazorpay
+            orderDetails={orderDetails}
+            amount={orderDetails.selectedPlan.price}
+            courseId={orderDetails.selectedPlan.id}
+            userId={userId}
+          />
+        )}
       </Box>
     </Box>
   );

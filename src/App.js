@@ -19,6 +19,8 @@ import MemberTable from "./components/Admin/Dashboard/MemberTable";
 import TrainerTable from "./components/Admin/Dashboard/TrainerTable";
 import AboutUs from "./components/Member/AboutUs";
 import ContactUs from "./components/Member/ContactUs";
+import ActiveMember from "./components/Admin/Dashboard/ActiveMember";
+import InActiveMember from "./components/Admin/Dashboard/InActiveMember";
 
 function App() {
   return (
@@ -71,6 +73,8 @@ function App() {
           <Route path="member/:id" element={<MemberDetails />} />
           <Route path="member-table" element={<MemberTable />} />
           <Route path="trainer-table" element={<TrainerTable />} />
+          <Route path="active-member" element={<ActiveMember />} />
+          <Route path="inactive-member" element={<InActiveMember />} />
         </Route>
       </Routes>
       <ToastContainer />

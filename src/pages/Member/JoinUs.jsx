@@ -24,6 +24,7 @@ import { Register } from "../../services/Service";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import color from "../../components/shared/Color";
+import { getUserId } from "../../services/axiosClient";
 
 const genderOptions = ["Male", "Female", "Other"];
 
@@ -67,7 +68,7 @@ const JoinUsForm = () => {
 
       if (res.data.status_code === "CREATED") {
         toast.success(res?.data?.msg || "You have joined successfully!");
-        navigate("/paymentpage");
+        navigate("/paymentpage", { state: { userId: res?.data?.data?.id } });
       }
       resetForm();
     } catch (err) {

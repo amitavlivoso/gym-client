@@ -1,63 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { Box, Typography } from "@mui/material";
-// import PaymentStatus from "../../components/Admin/Dashboard/Statistics";
-// import MemberTable from "../../components/Admin/Dashboard/MemberTable";
-// import TrainerTable from "../../components/Admin/Dashboard/TrainerTable";
-// import ManagerTable from "../../components/Admin/Dashboard/ManagerTable";
-// import LeadTable from "../../components/Admin/Dashboard/LeadTable";
-// import AcountantTable from "../../components/Admin/Dashboard/Accountant";
-// import RecepionistTable from "../../components/Admin/Dashboard/Receptionist";
-// import HRManagerTable from "../../components/Admin/Dashboard/HrManager";
-// import { getUserRoll } from "../../services/axiosClient";
-
-// const mockUsers = [
-//   { id: 1, name: "Alice", email: "alice@example.com", group: "Gold" },
-//   { id: 2, name: "Bob", email: "bob@example.com", group: "Silver" },
-// ];
-
-// const mockPayments = [
-//   { amount: 500, date: "2025-05-20" },
-//   { amount: 700, date: "2025-05-25" },
-//   { amount: 1200, date: "2025-05-05" },
-//   { amount: 900, date: "2025-04-29" },
-// ];
-
-// const AdminDashboard = () => {
-//   const [users, setUsers] = useState([]);
-//   const [payments, setPayments] = useState([]);
-
-//   useEffect(() => {
-//     setUsers(mockUsers);
-//     setPayments(mockPayments);
-//   }, []);
-
-//   return (
-//     <Box sx={{ display: "flex" }}>
-//       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-//         <Typography variant="h4" gutterBottom>
-//           {getUserRoll()}Dashboard
-//         </Typography>
-//         {/* <PaymentStatus /> */}
-//         {getUserRoll() === "Admin" || getUserRoll() === "Receptionist" ? (
-//           <>
-//             <MemberTable />
-//             <TrainerTable />
-//             <ManagerTable />
-//             <LeadTable />
-//             <AcountantTable />
-//             <RecepionistTable />
-//             <HRManagerTable />
-//           </>
-//         ) : (
-//           <></>
-//         )}
-//       </Box>
-//     </Box>
-//   );
-// };
-
-// export default AdminDashboard;
-
 import { useState, useEffect } from "react";
 
 import {
@@ -79,7 +19,12 @@ import {
 import Diversity3OutlinedIcon from "@mui/icons-material/Diversity3Outlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
-import { getAllPayment, getAllUser, getUser } from "../../services/Service";
+import {
+  deleteUser,
+  getAllPayment,
+  getAllUser,
+  getUser,
+} from "../../services/Service";
 import {
   Visibility as ViewIcon,
   Edit as EditIcon,
@@ -90,6 +35,7 @@ import ReactCalendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { getUserName } from "../../services/axiosClient";
+import { toast } from "react-toastify";
 
 const AdminDashboard = () => {
   const [members, setMembers] = useState([]);
@@ -102,6 +48,7 @@ const AdminDashboard = () => {
   const [payments, setPayments] = useState([]);
   const [totalPayments, setTotalPayments] = useState(0);
   const [paymentTrendData, setPaymentTrendData] = useState([]);
+  const [memberToDelete,setMemberToDelete]=useState("")
   const [paymentMonthlyChange, setPaymentMonthlyChange] = useState({
     amount: 0,
     percentage: 0,
@@ -369,11 +316,11 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "inactive":
+      case "INACTIVE":
         return "danger";
-      case "warm":
+      case "":
         return "warning";
-      case "active":
+      case "ACTIVE":
         return "success";
       default:
         return "secondary";
@@ -392,15 +339,18 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (memberId) => {
-    // Handle edit action
-    console.log(`Edit member with ID: ${memberId}`);
-    // You can navigate to an edit page or show an edit form
+    navigate(`/${role}/dashboard/add-member`, { state: { id:memberId } });
   };
 
-  const handleDelete = () => {
-    // Handle delete action
-    console.log("Member deleted");
-    // Implement your delete logic here
+  const handleDelete = (memberToDelete) => {
+    deleteUser(memberToDelete)
+      .then(() => {
+        setMembers((prev) => prev.filter((member) => member.id !== memberToDelete));
+        toast("Member Deleted Successfully");
+      })
+      .catch((err) => {
+        console.error("Error deleting user:", err);
+      });
   };
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
@@ -1041,13 +991,29 @@ const AdminDashboard = () => {
               <div className="card-header">
                 <h5 className="card-title">Gym Members</h5>
               </div>
-              <div className="card-body pt-0">
-                <div className="table-responsive">
+              <div className="card-body pt-0" style={{ paddingBottom: 0 }}>
+                {/* Scrollable table container */}
+                <div
+                  className="table-responsive"
+                  style={{
+                    maxHeight: "calc(100vh - 300px)", // Adjust height as needed
+                    overflowY: "auto",
+                    position: "relative",
+                  }}
+                >
                   <table
                     id="hideSearchExample"
                     className="table m-0 align-middle"
                   >
-                    <thead>
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        background: "white",
+                        zIndex: 1,
+                        boxShadow: "0 2px 2px -1px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
                       <tr>
                         <th>#</th>
                         <th>Member Name</th>
@@ -1070,40 +1036,54 @@ const AdminDashboard = () => {
                           </td>
                           <td>{member.firstName + " " + member.lastName}</td>
                           <td>{member.email}</td>
-                          <td>{member.joinDate}</td>
+                          <td>
+                            {new Date(member.joinDate).toLocaleDateString()}
+                          </td>
                           <td>{member.phoneNumber}</td>
                           <td>
-                            <span>{member.status}</span>
+                            <span
+                              className={`badge bg-${
+                                member.status === "ACTIVE"
+                                  ? "success"
+                                  : "danger"
+                              }`}
+                            >
+                              {member.status}
+                            </span>
                           </td>
                           <td>
                             <div className="d-inline-flex gap-1">
-                              {/* View Button with MUI Tooltip */}
-
                               <button
                                 type="button"
                                 className="btn btn-hover btn-sm rounded-5"
                                 onClick={() => handleView(member)}
+                                title="View"
                               >
                                 <ViewIcon fontSize="small" />
                               </button>
-
-                              {/* Edit Button with MUI Tooltip */}
 
                               <button
                                 type="button"
                                 className="btn btn-hover btn-sm rounded-5"
                                 onClick={() => handleEdit(member.id)}
+                                title="Edit"
                               >
                                 <EditIcon fontSize="small" />
                               </button>
 
-                              {/* Delete Button with MUI Tooltip */}
-
                               <button
                                 type="button"
                                 className="btn btn-hover btn-sm rounded-5"
-                                data-bs-toggle="modal"
-                                data-bs-target="#delRow"
+                                onClick={() => {
+                                  setMemberToDelete(member.id);
+                                  document
+                                    .getElementById("delRow")
+                                    .classList.add("show");
+                                  document.getElementById(
+                                    "delRow"
+                                  ).style.display = "block";
+                                }}
+                                title="Delete"
                               >
                                 <DeleteIcon fontSize="small" />
                               </button>
@@ -1115,15 +1095,16 @@ const AdminDashboard = () => {
                   </table>
                 </div>
 
-                {/* Delete confirmation modal with MUI icons */}
+                {/* Delete confirmation modal */}
                 <div
                   className="modal fade"
                   id="delRow"
                   tabIndex="-1"
                   aria-labelledby="delRowLabel"
                   aria-hidden="true"
+                  style={{ background: "rgba(0,0,0,0.5)" }}
                 >
-                  <div className="modal-dialog modal-sm">
+                  <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                       <div className="modal-header">
                         <h5 className="modal-title" id="delRowLabel">
@@ -1132,11 +1113,15 @@ const AdminDashboard = () => {
                         <button
                           type="button"
                           className="btn-close"
-                          data-bs-dismiss="modal"
+                          onClick={() => {
+                            document
+                              .getElementById("delRow")
+                              .classList.remove("show");
+                            document.getElementById("delRow").style.display =
+                              "none";
+                          }}
                           aria-label="Close"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </button>
+                        ></button>
                       </div>
                       <div className="modal-body">
                         Are you sure you want to delete this member's details?
@@ -1146,7 +1131,13 @@ const AdminDashboard = () => {
                           <button
                             type="button"
                             className="btn btn-outline-secondary"
-                            data-bs-dismiss="modal"
+                            onClick={() => {
+                              document
+                                .getElementById("delRow")
+                                .classList.remove("show");
+                              document.getElementById("delRow").style.display =
+                                "none";
+                            }}
                             aria-label="Close"
                           >
                             Cancel
@@ -1154,8 +1145,14 @@ const AdminDashboard = () => {
                           <button
                             type="button"
                             className="btn btn-danger"
-                            onClick={handleDelete}
-                            data-bs-dismiss="modal"
+                            onClick={() => {
+                              handleDelete(memberToDelete);
+                              document
+                                .getElementById("delRow")
+                                .classList.remove("show");
+                              document.getElementById("delRow").style.display =
+                                "none";
+                            }}
                             aria-label="Delete"
                           >
                             Delete
