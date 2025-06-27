@@ -374,7 +374,7 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="d-flex flex-column">
-                        <h2 className="lh-1">{members.length}</h2>
+                        <h2 onClick={()=>navigate('/admin/dashboard/member-table')} className="lh-1 cursor-pointer">{members.length}</h2>
                         <p className="m-0">Members</p>
                       </div>
                     </div>
@@ -418,7 +418,7 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="d-flex flex-column">
-                        <h2 className="lh-1">{leads.length}</h2>
+                        <h2 onClick={()=>navigate('/admin/dashboard/lead-table')} className="lh-1 cursor-pointer">{leads.length}</h2>
                         <p className="m-0">Leads</p>
                       </div>
                     </div>
@@ -462,7 +462,7 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="d-flex flex-column">
-                        <h2 className="lh-1">Rs. {totalPayments}</h2>
+                        <h2 onClick={()=>navigate('/admin/dashboard/payment')} className="lh-1 cursor-pointer">Rs. {totalPayments}</h2>
                         <p className="m-0">Revenue</p>
                       </div>
                     </div>

@@ -3,7 +3,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import login from '../assets/image/login.png'
+import login from "../assets/image/login.png";
 
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -34,13 +34,19 @@ const Login = () => {
         };
         Signin(payLoad)
           .then((res) => {
+            console.log(res);
             const accessToken = res?.data?.data?.accessToken;
             const role = res?.data?.data?.role?.toLowerCase();
+            const status = res?.data?.data?.status;
             setCurrentAccessToken(accessToken);
-            if (role) {
-              window.location.href = `/${role}/dashboard`;
+            if (status !== "ACTIVE") {
+              navigate("/paymentpage");
             } else {
-              console.error("Role is missing in response");
+              if (role) {
+                window.location.href = `#/${role}/dashboard`;
+              } else {
+                console.error("Role is missing in response");
+              }
             }
           })
           .catch((err) => {

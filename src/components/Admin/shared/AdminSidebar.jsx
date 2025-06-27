@@ -18,6 +18,7 @@ import {
   CheckCircle as ActiveMemberIcon, // For Active Members
   Cancel as InactiveMemberIcon, // For Inactive Members
   EventAvailable as AttendanceIcon, // For Attendance
+  TableChart as TableChartIcon,
 } from "@mui/icons-material";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { getUserName, getUserRoll } from "../../../services/axiosClient";
@@ -49,7 +50,40 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
     return initials;
   };
 
-  const navItems =
+  const navItems = getUserRoll() === "SuperAdmin"
+  ? [
+      {
+        text: "Dashboard",
+        icon: <DashboardIcon />,
+        to: "/superadmin/dashboard",
+      },
+      {
+        text: "Admin",
+        icon: <PeopleIcon />,
+        subItems: [
+          {
+            text: "Add Admin",
+            icon: <PersonAddIcon />,
+            to: "/superadmin/dashboard/add-admin",
+          },
+          {
+            text: "Admin Table",
+            icon: <TableChartIcon />,
+            to: "/superadmin/dashboard/admin-table",
+          },
+          {
+            text: "Active Admin",
+            icon: <ActiveMemberIcon />,
+            to: "/superadmin/dashboard/active-admin",
+          },
+          {
+            text: "Inactive Admin",
+            icon: <InactiveMemberIcon />,
+            to: "/superadmin/dashboard/inactive-admin",
+          },
+        ],
+      },
+    ]:
     getUserRoll() === "Admin" || getUserRoll() === "Receptionist"
       ? [
           {
@@ -89,7 +123,7 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
               {
                 text: "Attendance",
                 icon: <AttendanceIcon />,
-                to: `/${role}/dashboard/attendance`,
+                to: `/${role}/dashboard/attendnance`,
               },
             ],
           },
@@ -109,6 +143,7 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
               },
             ],
           },
+
           {
             text: "Staff",
             icon: <SupervisorAccountIcon />,
@@ -141,19 +176,51 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
             ],
           },
           {
+            text: "Staff Tables", // ✅ NEW MENU SECTION
+            icon: <TableChartIcon />,
+            subItems: [
+              {
+                text: "Accountant Table",
+                icon: <AccountBalanceIcon />,
+                to: `/${role}/dashboard/accountant-table`,
+              },
+              {
+                text: "HR Manager Table",
+                icon: <SupervisorAccountIcon />,
+                to: `/${role}/dashboard/hr-table`,
+              },
+              {
+                text: "Lead Table",
+                icon: <LeaderboardIcon />,
+                to: `/${role}/dashboard/lead-table`,
+              },
+              {
+                text: "Manager Table",
+                icon: <ManageAccountsIcon />,
+                to: `/${role}/dashboard/manager-table`,
+              },
+              {
+                text: "Receptionist Table",
+                icon: <RoomServiceIcon />,
+                to: `/${role}/dashboard/receptionist-table`,
+              },
+            ],
+          },
+
+          {
             text: "Workout Plans",
             icon: <FitnessCenterIcon />,
-            to: `/${role}/workouts`,
+            to: `/${role}/dashboard/workoutplan`,
           },
           {
             text: "Nutrition Plans",
             icon: <RestaurantIcon />,
-            to: `/${role}/nutrition`,
+            to: `/${role}/dashboard/nutrition`,
           },
           {
             text: "Equipment",
             icon: <FitnessCenterIcon />,
-            to: `/${role}/equipment`,
+            to: `/${role}/dashboard/equipment`,
           },
         ]
       : [
@@ -168,6 +235,21 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
                   text: "Payments",
                   icon: <PaymentIcon />,
                   to: "/member/dashboard/member-pay-history",
+                },
+                {
+                  text: "Workout Plans",
+                  icon: <FitnessCenterIcon />,
+                  to: `/admin/dashboard/workoutplan`,
+                },
+                {
+                  text: "Nutrition Plans",
+                  icon: <RestaurantIcon />,
+                  to: `/admin/dashboard/nutrition`,
+                },
+                {
+                  text: "Equipment",
+                  icon: <FitnessCenterIcon />,
+                  to: `/admin/dashboard/equipment`,
                 },
               ]
             : [

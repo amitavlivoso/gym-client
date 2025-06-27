@@ -15,7 +15,6 @@ import {
 import PaidIcon from "@mui/icons-material/Paid";
 import PendingIcon from "@mui/icons-material/Pending";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
-import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import { getAllPayment, getUser } from "../../../services/Service";
 
 const PaymentPage = () => {

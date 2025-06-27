@@ -3,6 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { getUserRoll } from "../services/axiosClient";
 import AdminDashboard from "./Admin/AdminDashBoard";
 import UserDashboard from "./Member/UserDashBoard";
+import SuperAdminDashboard from "../components/SuperAdmin/SuperAdmin";
 
 const Dashboard = () => {
   const [role, setRole] = useState("");
@@ -26,6 +27,8 @@ const Dashboard = () => {
         return <AdminDashboard />;
       case "Member":
         return <UserDashboard />;
+      case "SuperAdmin":
+        return <SuperAdminDashboard/>
       default:
         return <Typography>Loading or no dashboard available.</Typography>;
     }

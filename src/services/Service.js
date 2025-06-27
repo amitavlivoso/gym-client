@@ -64,3 +64,11 @@ export function verifyPayment(payload) {
 export function createPayment(payLoad) {
   return client.post("/Payment/create", payLoad);
 }
+
+
+export function getProfile(){
+  return client.get("/auth/profile")
+}
+export function editProfile(payLoad){
+  return client.patch('/auth/update-profile',payLoad)
+}

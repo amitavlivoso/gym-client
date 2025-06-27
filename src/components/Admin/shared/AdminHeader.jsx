@@ -1,121 +1,3 @@
-// import React from "react";
-// import {
-//   AppBar,
-//   Toolbar,
-//   Typography,
-//   IconButton,
-//   Badge,
-//   Avatar,
-//   useMediaQuery,
-//   useTheme,
-//   Menu,
-//   MenuItem,
-//   Box,
-//   Tooltip,
-// } from "@mui/material";
-// import MenuIcon from "@mui/icons-material/Menu";
-// import NotificationsIcon from "@mui/icons-material/Notifications";
-// import AccountCircle from "@mui/icons-material/AccountCircle";
-// import color from "../../shared/Color";
-// import { getUserRoll, logout } from "../../../services/axiosClient";
-
-// const AdminHeader = ({ handleDrawerToggle, drawerWidth }) => {
-//   const theme = useTheme();
-//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-//   const [anchorEl, setAnchorEl] = React.useState(null);
-//   const open = Boolean(anchorEl);
-
-//   const handleAvatarClick = (event) => {
-//     setAnchorEl(event.currentTarget);
-//   };
-
-//   const handleClose = () => {
-//     setAnchorEl(null);
-//   };
-
-//   return (
-//     <AppBar
-//       position="fixed"
-//       sx={{
-//         width: { sm: `calc(100% - ${drawerWidth}px)` },
-//         ml: { sm: `${drawerWidth}px` },
-//         backgroundColor: theme.palette.background.paper,
-//         color: theme.palette.text.primary,
-//         borderBottom: `1px solid ${theme.palette.divider}`,
-//         boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-//         zIndex: theme.zIndex.drawer + 1,
-//       }}
-//     >
-//       <Toolbar>
-//         {isMobile && (
-//           <IconButton
-//             edge="start"
-//             color="inherit"
-//             aria-label="open drawer"
-//             onClick={handleDrawerToggle}
-//             sx={{ mr: 2 }}
-//           >
-//             <MenuIcon />
-//           </IconButton>
-//         )}
-
-//         <Typography
-//           variant="h6"
-//           noWrap
-//           component="div"
-//           color={color.firstColor}
-//           sx={{ flexGrow: 1, fontWeight: 600 }}
-//         >
-//           {getUserRoll()} Dashboard
-//         </Typography>
-
-//         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-//           <Tooltip title="Notifications">
-//             <IconButton color="inherit">
-//               <Badge badgeContent={4} color="error">
-//                 <NotificationsIcon />
-//               </Badge>
-//             </IconButton>
-//           </Tooltip>
-
-//           <Tooltip title="Account settings">
-//             <IconButton onClick={handleAvatarClick} sx={{ p: 0 }}>
-//               <Avatar sx={{ bgcolor: color.firstColor }}>
-//                 <AccountCircle />
-//               </Avatar>
-//             </IconButton>
-//           </Tooltip>
-
-//           <Menu
-//             anchorEl={anchorEl}
-//             open={open}
-//             onClose={handleClose}
-//             onClick={handleClose}
-//             PaperProps={{
-//               elevation: 4,
-//               sx: {
-//                 mt: 1.5,
-//                 minWidth: 160,
-//                 borderRadius: 2,
-//                 boxShadow: theme.shadows[3],
-//               },
-//             }}
-//             transformOrigin={{ horizontal: "right", vertical: "top" }}
-//             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-//           >
-//             <MenuItem>Profile</MenuItem>
-//             <MenuItem>Settings</MenuItem>
-//             <MenuItem onClick={() => logout()}>Logout</MenuItem>
-//           </Menu>
-//         </Box>
-//       </Toolbar>
-//     </AppBar>
-//   );
-// };
-
-// export default AdminHeader;
-
 import { useState, useEffect } from "react";
 import {
   Menu as MenuIcon,
@@ -550,6 +432,12 @@ const AdminHeader = () => {
                 )}
               </div>
               <div className="mx-3 my-2 d-grid">
+                <Link
+                  to="profile"
+                  className="btn btn-outline-primary mb-2 d-flex align-items-center justify-content-center gap-2"
+                >
+                  <AccountCircleIcon /> Profile
+                </Link>
                 <button onClick={() => logout()} className="btn btn-primary">
                   Logout
                 </button>
@@ -575,19 +463,23 @@ const AdminHeader = () => {
 
         {/* 7 Days to Renew Message */}
         <div className="ms-auto d-lg-flex d-none flex-row">
-          <div className="d-flex align-items-center border px-3 py-2 rounded bg-light text-dark">
-            {getUserRoll() === "Admin" ? (
-              <>
-                <CalendarIcon className="text-primary me-2" />
-                <span className="fw-semibold">7 Days to Renew</span>
-              </>
-            ) : (
-              <>
-                <CalendarIcon className="text-primary me-2" />
-                <span className="fw-semibold">7 Days to Renew</span>
-              </>
+          
+            {getUserRoll() !== "SuperAdmin" && (
+              <div className="d-flex align-items-center border px-3 py-2 rounded bg-light text-dark">
+                {getUserRoll() === "Admin" ? (
+                  <>
+                    <CalendarIcon className="text-primary me-2" />
+                    <span className="fw-semibold">7 Days to Renew</span>
+                  </>
+                ) : (
+                  <>
+                    <CalendarIcon className="text-primary me-2" />
+                    <span className="fw-semibold">7 Days to Renew</span>
+                  </>
+                )}
+              </div>
             )}
-          </div>
+          
         </div>
       </div>
     </div>

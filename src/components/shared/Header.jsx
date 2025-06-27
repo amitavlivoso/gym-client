@@ -1,25 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/images/livosologo.png";
-import { Link as ScrollLink } from "react-scroll";
 
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [scrolled, setScrolled] = useState(false);
-  const isHomePage = location.pathname === "/";
-  const shouldShowBg = isHomePage ? scrolled : true;
 
+  // Detect if we are on the Home or About page
+  const isHomePage = location.pathname === "/";
+  const isAboutPage = location.pathname === "/about";
+
+  // Background should change based on scroll for Home page, and always black for About page
+  const shouldShowBg = isHomePage ? scrolled : true;
+  const shouldaboutBg = isAboutPage ? true : false;  // Always true for About page
+
+  // Debugging log to see the pathname and scroll state
   useEffect(() => {
+    console.log("Current pathname:", location.pathname); // Debug the path
+    console.log("Scrolled:", scrolled); // Debug scroll state
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 50); // Change state when scroll position is more than 50px
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
+    // Cleanup listener when component unmounts
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [location.pathname, scrolled]); // Runs on pathname and scroll state change
+
+  // Class for active navigation links
   const navLinkClass = (path) =>
     `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
       location.pathname === path
@@ -30,7 +42,7 @@ function Header() {
   return (
     <div
       className={`z-50 fixed w-full top-0 left-0 transition-all duration-300 ${
-        shouldShowBg ? "bg-black shadow-md" : "bg-transparent"
+        shouldShowBg || shouldaboutBg ? "bg-black shadow-md" : "bg-transparent"
       }`}
     >
       <nav>
@@ -54,17 +66,6 @@ function Header() {
               <Link to="/join" className={navLinkClass("/join")}>
                 Join
               </Link>
-
-              <ScrollLink
-                to="pricing"
-                smooth={true}
-                duration={500}
-                offset={-70} // if you have a fixed header
-                className={navLinkClass("/price")}
-                style={{ cursor: "pointer" }}
-              >
-                Pricing
-              </ScrollLink>
 
               <Link to="/about" className={navLinkClass("/about")}>
                 About

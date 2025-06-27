@@ -39,6 +39,32 @@ const planOptions = [
   { label: "12 Months", value: "12month", price: 10000 },
 ];
 
+const calculateExpirationDate = (planName) => {
+  let daysToAdd = 0;
+
+  switch (planName) {
+    case "3month":
+      daysToAdd = 90;  // 3 months = 90 days
+      break;
+    case "6month":
+      daysToAdd = 180; // 6 months = 180 days
+      break;
+    case "9month":
+      daysToAdd = 270; // 9 months = 270 days
+      break;
+    case "12month":
+      daysToAdd = 365; // 12 months = 365 days
+      break;
+    default:
+      daysToAdd = 30;  // Default to 1 month if no match
+  }
+
+  const paidAt = new Date();
+  const expirationDate = new Date(paidAt.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+
+  return expirationDate;
+};
+
 const roleOptions = [
   "Accountant",
   "Trainer",
@@ -116,7 +142,7 @@ const AddMember = ({ role }) => {
     paymentAmount: formState.paymentAmount,
     paymentMode: formState.paymentMode,
   };
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   return (
     <Box
@@ -126,7 +152,7 @@ const AddMember = ({ role }) => {
         alignItems: "center",
         justifyContent: "center",
         p: 2,
-        mb:3
+        mb: 3,
       }}
     >
       <Paper
@@ -199,23 +225,25 @@ const AddMember = ({ role }) => {
               );
 
               if (!isEdit && values.role === "Member" && id) {
+                const paidAt = new Date();
+                 const expirationDate = calculateExpirationDate(values.planName);
+
+
+                const expiresAt = expirationDate
+                
+
                 const paymentPayload = {
                   userId: id,
                   planName: values.planName,
                   amount: values.paymentAmount,
                   method: values.paymentMode,
+                  paidAt: paidAt.toISOString().split("T")[0], // YYYY-MM-DD
+                  expiresAt: expiresAt.toISOString().split("T")[0], // YYYY-MM-DD
                 };
+                console.log(paymentPayload)
 
                 try {
-                  const paymentRes = await getPayment(id);
-                  const existingPayment = paymentRes?.data?.data;
-
-                  if (existingPayment?.id) {
-                    await updatePayment(existingPayment.id, paymentPayload);
-                   
-                  } else {
-                    await addPayment(paymentPayload);
-                  }
+                  await addPayment(paymentPayload);
                 } catch (paymentError) {
                   console.error("❌ Payment Error:", paymentError);
                 }

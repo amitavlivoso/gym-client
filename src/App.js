@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Member/Home";
 import Layout from "./components/shared/Layout";
 import Login from "./pages/Login";
@@ -7,7 +7,6 @@ import UserDashboard from "./pages/Member/UserDashBoard";
 import AdminDashboard from "./pages/Admin/AdminDashBoard";
 import RoleLayout from "./components/shared/RoleLayout";
 import { ToastContainer } from "react-toastify";
-import AddMemberDynamic from "./components/shared/AddMemberDynamic";
 import AddMember from "./pages/Admin/Member/AddMember";
 import Dashboard from "./pages/Dashboard";
 import PaymentHistoryTable from "./pages/Member/PaymentHistoryTable";
@@ -21,6 +20,23 @@ import AboutUs from "./components/Member/AboutUs";
 import ContactUs from "./components/Member/ContactUs";
 import ActiveMember from "./components/Admin/Dashboard/ActiveMember";
 import InActiveMember from "./components/Admin/Dashboard/InActiveMember";
+import AttendancePage from "./components/Admin/Dashboard/Attendnance";
+import WorkoutPlansPage from "./components/Admin/Dashboard/WorkoutPlan";
+import NutritionPlansPage from "./components/Admin/Dashboard/Nutritionplan";
+import EquipmentPlansPage from "./components/Admin/Dashboard/Equipmentsplan";
+import WorkoutPlanForm from "./components/Admin/Dashboard/WorkoutPlanForm";
+import EquipmentForm from "./components/Admin/Dashboard/EquipmentForm";
+import NutritionPlanForm from "./components/Admin/Dashboard/NutritionPlanForm";
+import AcountantTable from "./components/Admin/Dashboard/Accountant";
+import HRManagerTable from "./components/Admin/Dashboard/HrManager";
+import LeadTable from "./components/Admin/Dashboard/LeadTable";
+import ManagerTable from "./components/Admin/Dashboard/ManagerTable";
+import RecepionistTable from "./components/Admin/Dashboard/Receptionist";
+import Profile from "./components/Admin/Dashboard/Profile";
+import AdminTable from "./components/SuperAdmin/AdminTable";
+import AddAdmin from "./components/SuperAdmin/AddAdmin";
+import ActiveAdminTable from "./components/SuperAdmin/ActiveAdmin";
+import InActiveAdminTable from "./components/SuperAdmin/InActiveAdmin";
 
 function App() {
   return (
@@ -44,6 +60,7 @@ function App() {
             path="/:role/dashboard/add-member"
             element={<AddMember role="Member" />}
           />
+          <Route path="/:role/dashboard/add-admin" element={<AddAdmin />} />
           <Route
             path="/:role/dashboard/add-trainer"
             element={<AddMember role="Trainer" />}
@@ -73,8 +90,24 @@ function App() {
           <Route path="member/:id" element={<MemberDetails />} />
           <Route path="member-table" element={<MemberTable />} />
           <Route path="trainer-table" element={<TrainerTable />} />
+          <Route path="accountant-table" element={<AcountantTable />} />
+          <Route path="hr-table" element={<HRManagerTable />} />
+          <Route path="lead-table" element={<LeadTable />} />
+          <Route path="manager-table" element={<ManagerTable />} />
+          <Route path="admin-table" element={<AdminTable />} />
+          <Route path="active-admin" element={<ActiveAdminTable />} />
+          <Route path="inactive-admin" element={<InActiveAdminTable />} />
+          <Route path="receptionist-table" element={<RecepionistTable />} />
           <Route path="active-member" element={<ActiveMember />} />
           <Route path="inactive-member" element={<InActiveMember />} />
+          <Route path="attendnance" element={<AttendancePage />} />
+          <Route path="workoutplan" element={<WorkoutPlansPage />} />
+          <Route path="nutrition" element={<NutritionPlansPage />} />
+          <Route path="equipment" element={<EquipmentPlansPage />} />
+          <Route path="add-workoutplan" element={<WorkoutPlanForm />} />
+          <Route path="add-equipment" element={<EquipmentForm />} />
+          <Route path="add-nutrition" element={<NutritionPlanForm />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
       <ToastContainer />

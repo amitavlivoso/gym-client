@@ -3,6 +3,7 @@ const color = {
   //Written colors
   secondColor: "#d81e5b",
   buttonColor: "linear-gradient(35deg, #E46783 7%, #B844CF 100%)",
+  textColor1: "#566fe2",
   //not used
   thirdColor: "#d81e5b",
   //not used
