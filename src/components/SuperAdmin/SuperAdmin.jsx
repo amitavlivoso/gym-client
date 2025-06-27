@@ -378,7 +378,7 @@ const SuperAdminDashboard = () => {
                       <div className="d-flex flex-column">
                         <h2
                           onClick={() =>
-                            navigate("/admin/dashboard/member-table")
+                            navigate("/admin/dashboard/admin-table")
                           }
                           className="lh-1 cursor-pointer"
                         >
