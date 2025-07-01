@@ -34,7 +34,7 @@ import {
 import ReactCalendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate, useParams } from "react-router-dom";
-import { getUserName } from "../../services/axiosClient";
+import { getUserName, getUserRoll } from "../../services/axiosClient";
 import { toast } from "react-toastify";
 
 const AdminDashboard = () => {
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
   const [payments, setPayments] = useState([]);
   const [totalPayments, setTotalPayments] = useState(0);
   const [paymentTrendData, setPaymentTrendData] = useState([]);
-  const [memberToDelete,setMemberToDelete]=useState("")
+  const [memberToDelete, setMemberToDelete] = useState("");
   const [paymentMonthlyChange, setPaymentMonthlyChange] = useState({
     amount: 0,
     percentage: 0,
@@ -221,6 +221,7 @@ const AdminDashboard = () => {
 
         // Process leads
         const leadsData = leadRes?.data?.data?.rows || [];
+        console.log(leadsData);
         setLeads(leadsData);
         const monthlyLeads = processMemberData(leadsData, "Lead");
         setLeadTrendData(monthlyLeads);
@@ -339,13 +340,15 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (memberId) => {
-    navigate(`/${role}/dashboard/add-member`, { state: { id:memberId } });
+    navigate(`/${role}/dashboard/add-member`, { state: { id: memberId } });
   };
 
   const handleDelete = (memberToDelete) => {
     deleteUser(memberToDelete)
       .then(() => {
-        setMembers((prev) => prev.filter((member) => member.id !== memberToDelete));
+        setMembers((prev) =>
+          prev.filter((member) => member.id !== memberToDelete)
+        );
         toast("Member Deleted Successfully");
       })
       .catch((err) => {
@@ -374,7 +377,14 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="d-flex flex-column">
-                        <h2 onClick={()=>navigate('/admin/dashboard/member-table')} className="lh-1 cursor-pointer">{members.length}</h2>
+                        <h2
+                          onClick={() =>
+                            navigate("/admin/dashboard/member-table")
+                          }
+                          className="lh-1 cursor-pointer"
+                        >
+                          {members.length}
+                        </h2>
                         <p className="m-0">Members</p>
                       </div>
                     </div>
@@ -418,7 +428,14 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="d-flex flex-column">
-                        <h2 onClick={()=>navigate('/admin/dashboard/lead-table')} className="lh-1 cursor-pointer">{leads.length}</h2>
+                        <h2
+                          onClick={() =>
+                            navigate("/admin/dashboard/lead-table")
+                          }
+                          className="lh-1 cursor-pointer"
+                        >
+                          {leads.length}
+                        </h2>
                         <p className="m-0">Leads</p>
                       </div>
                     </div>
@@ -449,50 +466,115 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-4 col-sm-12 col-12">
-                <div className="card mb-4">
-                  <div className="card-body">
-                    <div className="d-flex align-items-center">
-                      <div className="p-2 border border-primary rounded-circle me-3">
-                        <div className="icon-box md bg-primary-lighten rounded-5">
-                          <AttachMoneyOutlinedIcon
-                            color="primary"
-                            fontSize="medium"
-                          />
+              {getUserRoll() === "Admin" || getUserRoll() === "Receptionist" ? (
+                <>
+                  <div className="col-lg-4 col-sm-12 col-12">
+                    <div className="card mb-4">
+                      <div className="card-body">
+                        <div className="d-flex align-items-center">
+                          <div className="p-2 border border-primary rounded-circle me-3">
+                            <div className="icon-box md bg-primary-lighten rounded-5">
+                              <AttachMoneyOutlinedIcon
+                                color="primary"
+                                fontSize="medium"
+                              />
+                            </div>
+                          </div>
+                          <div className="d-flex flex-column">
+                            <h2
+                              onClick={() =>
+                                navigate("/admin/dashboard/payment")
+                              }
+                              className="lh-1 cursor-pointer"
+                            >
+                              Rs. {totalPayments}
+                            </h2>
+                            <p className="m-0">Revenue</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="d-flex flex-column">
-                        <h2 onClick={()=>navigate('/admin/dashboard/payment')} className="lh-1 cursor-pointer">Rs. {totalPayments}</h2>
-                        <p className="m-0">Revenue</p>
-                      </div>
-                    </div>
-                    <div className="d-flex gap-2 flex-wrap align-items-center justify-content-between mt-2">
-                      <div className="text-start">
-                        <p className="mb-0 text-primary">
-                          {paymentMonthlyChange.percentage >= 0 ? "+" : ""}
-                          {paymentMonthlyChange.percentage}%
-                        </p>
-                        <span className="badge bg-primary-light text-primary small">
-                          this month
-                        </span>
-                      </div>
-                      <div style={{ width: 80, height: 40 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={paymentTrendData}>
-                            <Line
-                              type="monotone"
-                              dataKey="amount"
-                              stroke="#4e73df"
-                              strokeWidth={2}
-                              dot={false}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                        <div className="d-flex gap-2 flex-wrap align-items-center justify-content-between mt-2">
+                          <div className="text-start">
+                            <p className="mb-0 text-primary">
+                              {paymentMonthlyChange.percentage >= 0 ? "+" : ""}
+                              {paymentMonthlyChange.percentage}%
+                            </p>
+                            <span className="badge bg-primary-light text-primary small">
+                              this month
+                            </span>
+                          </div>
+                          <div style={{ width: 80, height: 40 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={paymentTrendData}>
+                                <Line
+                                  type="monotone"
+                                  dataKey="amount"
+                                  stroke="#4e73df"
+                                  strokeWidth={2}
+                                  dot={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  <div className="col-lg-4 col-sm-12 col-12">
+                    <div className="card mb-4">
+                      <div className="card-body">
+                        <div className="d-flex align-items-center">
+                          <div className="p-2 border border-primary rounded-circle me-3">
+                            <div className="icon-box md bg-primary-lighten rounded-5">
+                              <AttachMoneyOutlinedIcon
+                                color="primary"
+                                fontSize="medium"
+                              />
+                            </div>
+                          </div>
+                          <div className="d-flex flex-column">
+                            <h2
+                              onClick={() =>
+                                navigate("/admin/dashboard/payment")
+                              }
+                              className="lh-1 cursor-pointer"
+                            >
+                              Rs. {totalPayments}
+                            </h2>
+                            <p className="m-0"></p>
+                          </div>
+                        </div>
+                        <div className="d-flex gap-2 flex-wrap align-items-center justify-content-between mt-2">
+                          <div className="text-start">
+                            <p className="mb-0 text-primary">
+                              {paymentMonthlyChange.percentage >= 0 ? "+" : ""}
+                              {paymentMonthlyChange.percentage}%
+                            </p>
+                            <span className="badge bg-primary-light text-primary small">
+                              this month
+                            </span>
+                          </div>
+                          <div style={{ width: 80, height: 40 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={paymentTrendData}>
+                                <Line
+                                  type="monotone"
+                                  dataKey="amount"
+                                  stroke="#4e73df"
+                                  strokeWidth={2}
+                                  dot={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="row gx-4">
@@ -540,68 +622,141 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-sm-12">
-                <div className="card mb-4">
-                  <div className="card-header pb-0 d-flex align-items-center justify-content-between">
-                    <h5 className="card-title">Revenue</h5>
-                    <div className="btn-group btn-group-sm" role="group">
-                      {availableYears.map((year) => (
-                        <button
-                          key={year}
-                          type="button"
-                          className={`btn ${
-                            selectedYear === year
-                              ? "btn-primary"
-                              : "btn-outline-primary"
-                          }`}
-                          onClick={() => handleYearChange(year)}
-                        >
-                          {year}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              {getUserRoll() === "Admin" || getUserRoll() === "Receptionist" ? (
+                <>
+                  <div className="col-sm-12">
+                    <div className="card mb-4">
+                      <div className="card-header pb-0 d-flex align-items-center justify-content-between">
+                        <h5 className="card-title">Revenue</h5>
+                        <div className="btn-group btn-group-sm" role="group">
+                          {availableYears.map((year) => (
+                            <button
+                              key={year}
+                              type="button"
+                              className={`btn ${
+                                selectedYear === year
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() => handleYearChange(year)}
+                            >
+                              {year}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                  <div className="card-body pt-0">
-                    <div
-                      className="overflow-hidden"
-                      style={{ height: "300px" }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart
-                          data={paymentTrendData}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      <div className="card-body pt-0">
+                        <div
+                          className="overflow-hidden"
+                          style={{ height: "300px" }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip
-                            formatter={(value, name) => {
-                              if (name === "Revenue")
-                                return [`Rs. ${value}`, name];
-                              return [value, name];
-                            }}
-                          />
-                          <Legend />
-                          <Area
-                            type="monotone"
-                            dataKey="amount"
-                            fill="#8884d8"
-                            stroke="#8884d8"
-                            name="Revenue"
-                          />
-                          <Bar
-                            dataKey="count"
-                            barSize={20}
-                            fill="#413ea0"
-                            name="Transactions"
-                          />
-                        </ComposedChart>
-                      </ResponsiveContainer>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={paymentTrendData}
+                              margin={{
+                                top: 20,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip
+                                formatter={(value, name) => {
+                                  if (name === "Revenue")
+                                    return [`Rs. ${value}`, name];
+                                  return [value, name];
+                                }}
+                              />
+                              <Legend />
+                              <Area
+                                type="monotone"
+                                dataKey="amount"
+                                fill="#8884d8"
+                                stroke="#8884d8"
+                                name="Revenue"
+                              />
+                              <Bar
+                                dataKey="count"
+                                barSize={20}
+                                fill="#413ea0"
+                                name="Transactions"
+                              />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <>
+                  <div className="col-sm-12">
+                    <div className="card mb-4">
+                      <div className="card-header pb-0 d-flex align-items-center justify-content-between">
+                        <h5 className="card-title">Total Leads</h5>
+                        <div className="btn-group btn-group-sm" role="group">
+                          {availableYears.map((year) => (
+                            <button
+                              key={year}
+                              type="button"
+                              className={`btn ${
+                                selectedYear === year
+                                  ? "btn-primary"
+                                  : "btn-outline-primary"
+                              }`}
+                              onClick={() => handleYearChange(year)}
+                            >
+                              {year}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="card-body pt-0">
+                        <div
+                          className="overflow-hidden"
+                          style={{ height: "300px" }}
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={leadTrendData} // Ensure this contains month-wise lead data
+                              margin={{
+                                top: 20,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <Tooltip
+                                formatter={(value, name) => {
+                                  if (name === "Leads")
+                                    return [`${value} Leads`, name];
+                                  return [value, name];
+                                }}
+                              />
+                              <Legend />
+                              {/* Bar for Lead count */}
+                              <Bar
+                                dataKey="lead" // Ensure your data has a "count" field to represent the number of leads
+                                barSize={20}
+                                fill="#413ea0"
+                                name="Leads Count"
+                              />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="col-xxl-3 col-sm-12">
@@ -985,6 +1140,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div> */}
+
         <div className="row gx-4">
           <div className="col-sm-12">
             <div className="card">
@@ -1062,31 +1218,38 @@ const AdminDashboard = () => {
                                 <ViewIcon fontSize="small" />
                               </button>
 
-                              <button
-                                type="button"
-                                className="btn btn-hover btn-sm rounded-5"
-                                onClick={() => handleEdit(member.id)}
-                                title="Edit"
-                              >
-                                <EditIcon fontSize="small" />
-                              </button>
+                              {getUserRoll() === "Admin" ||
+                              getUserRoll() === "Receptionist" ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-hover btn-sm rounded-5"
+                                    onClick={() => handleEdit(member.id)}
+                                    title="Edit"
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </button>
 
-                              <button
-                                type="button"
-                                className="btn btn-hover btn-sm rounded-5"
-                                onClick={() => {
-                                  setMemberToDelete(member.id);
-                                  document
-                                    .getElementById("delRow")
-                                    .classList.add("show");
-                                  document.getElementById(
-                                    "delRow"
-                                  ).style.display = "block";
-                                }}
-                                title="Delete"
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-hover btn-sm rounded-5"
+                                    onClick={() => {
+                                      setMemberToDelete(member.id);
+                                      document
+                                        .getElementById("delRow")
+                                        .classList.add("show");
+                                      document.getElementById(
+                                        "delRow"
+                                      ).style.display = "block";
+                                    }}
+                                    title="Delete"
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </button>
+                                </>
+                              ) : (
+                                <></>
+                              )}
                             </div>
                           </td>
                         </tr>

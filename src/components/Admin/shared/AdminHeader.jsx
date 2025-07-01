@@ -17,13 +17,14 @@ import {
 } from "@mui/icons-material";
 import logo from "../../assets/images/livosologo.png";
 import {
+  getUserId,
   getUserName,
   getUserRoll,
   logout,
 } from "../../../services/axiosClient";
 import { Link } from "react-router-dom";
 import DateRangeSelector from "./DateRangeSelector";
-import { getAllPayment, getUser } from "../../../services/Service";
+import { getAllPayment, getPayment, getUser } from "../../../services/Service";
 
 const AdminHeader = () => {
   const [members, setMembers] = useState([]);
@@ -42,6 +43,33 @@ const AdminHeader = () => {
   });
   const [trainers, setTrainers] = useState([]);
   const [gymMembers, setGymMembers] = useState([]);
+  const [remainingDays, setRemainingDays] = useState(null);
+
+  if (getUserRoll() !== "Admin") {
+    getPayment(getUserId()).then((res) => {
+      console.log(res);
+      const payment = res?.data?.data;
+      if (payment?.expiresAt) {
+        const today = new Date();
+        const expiry = new Date(payment.expiresAt);
+
+        // Remove time part for accurate days difference
+        today.setHours(0, 0, 0, 0);
+        expiry.setHours(0, 0, 0, 0);
+
+        const diffInMs = expiry - today;
+        const diffInDays = Math.max(
+          0,
+          Math.ceil(diffInMs / (1000 * 60 * 60 * 24))
+        );
+
+        console.log(`Days left: ${diffInDays}`);
+
+        setRemainingDays(diffInDays);
+      }
+    });
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       const payload = {
@@ -463,23 +491,20 @@ const AdminHeader = () => {
 
         {/* 7 Days to Renew Message */}
         <div className="ms-auto d-lg-flex d-none flex-row">
-          
-            {getUserRoll() !== "SuperAdmin" && (
-              <div className="d-flex align-items-center border px-3 py-2 rounded bg-light text-dark">
-                {getUserRoll() === "Admin" ? (
-                  <>
-                    <CalendarIcon className="text-primary me-2" />
-                    <span className="fw-semibold">7 Days to Renew</span>
-                  </>
-                ) : (
-                  <>
-                    <CalendarIcon className="text-primary me-2" />
-                    <span className="fw-semibold">7 Days to Renew</span>
-                  </>
-                )}
-              </div>
-            )}
-          
+          {getUserRoll() !== "SuperAdmin" && (
+            <div className="d-flex align-items-center border px-3 py-2 rounded bg-light text-dark">
+              {(getUserRoll() === "Admin" || getUserRoll() === "Member") && (
+                <>
+                  <CalendarIcon className="text-primary me-2" />
+                  <span className="fw-semibold">
+                    {getUserRoll() === "Member"
+                      ? `${remainingDays - 1} Days to Renew`
+                      : "7 Days to Renew"}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -65,10 +65,93 @@ export function createPayment(payLoad) {
   return client.post("/Payment/create", payLoad);
 }
 
-
-export function getProfile(){
-  return client.get("/auth/profile")
+export function getProfile() {
+  return client.get("/auth/profile");
 }
-export function editProfile(payLoad){
-  return client.patch('/auth/update-profile',payLoad)
+export function editProfile(payLoad) {
+  return client.patch("/auth/update-profile", payLoad);
+}
+
+export function createBankDetails(payLoad) {
+  return client.post("/BankDetails/create", payLoad);
+}
+
+export function updateBankDetails(id, payLoad) {
+  return client.patch(`/BankDetails/update-record/${id}`, payLoad);
+}
+
+export function getBankDetailsByUserId(userId) {
+  return client.get("/BankDetails/search-one-record/", { params: { userId } });
+}
+
+export function createPaymentAdmin(payLoad) {
+  return client.post("/UserPayment/create/", payLoad);
+}
+
+export function getAllPaymentForUser(payLoad) {
+  return client.post("/UserPayment/search-record/", payLoad);
+}
+
+export function getPaymentForUserByAdmin(id) {
+  return client.get(`UserPayment/get-one-record/${id}`);
+}
+export function updatePaymentAdmin(id, payLoad) {
+  return client.patch(`/UserPayment/update-record/${id}`, payLoad);
+}
+export function deletePaymentAdmin(id) {
+  return client.delete(`/UserPayment/delete-record/${id}`);
+}
+
+export function createPaymentSuperAdmin(payLoad) {
+  return client.post("/AdminPayment/create/", payLoad);
+}
+
+export function getAllPaymentForAdmin(payLoad) {
+  return client.post("/AdminPayment/search-record/", payLoad);
+}
+
+export function getPaymentForAdminBySuperAdmin(id) {
+  return client.get(`/AdminPayment/get-one-record/${id}`);
+}
+export function updatePaymentSuperAdmin(id, payLoad) {
+  return client.patch(`/AdminPayment/update-record/${id}`, payLoad);
+}
+export function deletePaymentSuperAdmin(id) {
+  return client.delete(`/AdminPayment/delete-record/${id}`);
+}
+
+export function getAllWorkoutPlans(payLoad) {
+  return client.post("/Workout/search-record", payLoad);
+}
+
+export function createWorkOutPlan(payLoad) {
+  return client.post("/Workout/create", payLoad);
+}
+
+export function getWorkoutPlanById(id) {
+  return client.get(`/Workout/get-one-record/${id}`);
+}
+export function updateWorkoutPlan(id, payLoad) {
+  return client.patch(`/Workout/update-record/${id}`, payLoad);
+}
+export function deleteWorkoutPlan(id) {
+  return client.delete(`/Workout/delete-record/${id}`);
+}
+
+export function getAllNutritionsPlans(payLoad) {
+  return client.post("/Nurition/search-record", payLoad);
+}
+
+export function createNutritionsPlans(payLoad) {
+  return client.post("/Nurition/create", payLoad);
+}
+
+export function getNutritionPlanById(id) {
+  return client.get(`/Nurition/get-one-record/${id}`);
+}
+export function updateNutritionPlan(id, payLoad) {
+  return client.patch(`/Nurition/update-record/${id}`, payLoad);
+}
+export function deleteNutritionPlan(id) {
+  return client.delete(`/Nurition/delete-record/${id}`);
 }

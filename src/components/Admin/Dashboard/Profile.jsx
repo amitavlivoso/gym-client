@@ -1,513 +1,276 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  TextField,
-  Typography,
-  useMediaQuery,
-  MenuItem,
-  Card,
-  Divider,
-  Avatar,
-  Chip,
-  Paper,
-  Stack
-} from "@mui/material";
-import { getProfile, editProfile } from "../../../services/Service";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import color from "../../shared/Color";
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
-import PersonIcon from '@mui/icons-material/Person';
-import EmailIcon from '@mui/icons-material/Email';
-import PhoneIcon from '@mui/icons-material/Phone';
-import HomeIcon from '@mui/icons-material/Home';
-import CakeIcon from '@mui/icons-material/Cake';
-import WorkIcon from '@mui/icons-material/Work';
-import EventIcon from '@mui/icons-material/Event';
-import EmergencyIcon from '@mui/icons-material/MedicalServices';
+import {
+  getUserId,
+  getUserName,
+  getUserRoll,
+} from "../../../services/axiosClient";
 
-export default function Profile() {
-  const [profileData, setProfileData] = useState({
-    firstName: "",
-    lastName: "",
-    role: "",
-    status: "",
+import {
+  createBankDetails,
+  editProfile,
+  getBankDetailsByUserId,
+  getUser,
+  updateBankDetails,
+} from "../../../services/Service";
+
+const Profile = () => {
+  const [hasBankDetails, setHasBankDetails] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
     email: "",
     phoneNumber: "",
     gender: "",
     dob: "",
-    joinDate: "",
-    address: "",
-    isVerified: false,
-    emergencyContact: "",
+    adharNumber: "",
+    bankName: "",
+    AccNo: "",
+    IFSC: "",
   });
 
-  const [originalData, setOriginalData] = useState({});
-  const [isEditable, setIsEditable] = useState(false);
-  const isMobile = useMediaQuery("(max-width:700px)");
-
   useEffect(() => {
-    getProfile()
+    getUser(getUserId())
       .then((res) => {
-        setProfileData(res?.data?.data);
-        setOriginalData(res?.data?.data);
+        console.log(res);
+
+        const user = res?.data?.data || {};
+
+        setFormData({
+          name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+          email: user.email || "",
+          phoneNumber: user.phoneNumber || "",
+          gender: user.gender || "",
+          dob: user.dob || "",
+          adharNumber: user.adharNumber || "",
+        });
       })
       .catch((err) => {
         console.error(err);
       });
+
+    getBankDetailsByUserId(getUserId())
+      .then((res) => {
+        console.log("Bank Details:", res);
+
+        const bank = res?.data?.data;
+        if (bank) {
+          setHasBankDetails(true);
+          setFormData((prev) => ({
+            ...prev,
+            bankName: bank.bankName || "",
+            AccNo: bank.AccNo || "",
+            IFSC: bank.IFSC || "",
+          }));
+        }
+      })
+      .catch((err) => {
+        console.log("Bank details not found:", err);
+        setHasBankDetails(false);
+      });
+
+    // setFormData({
+    //   name: `${fetchedUser.firstName} ${fetchedUser.lastName}`,
+
+    //   bankName: fetchedUser.bankName,
+    //   AccNo: fetchedUser.AccNo,
+    //   IFSC: fetchedUser.IFSC,
+    // });
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfileData((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const toggleEdit = () => {
-    if (isEditable) {
-      editProfile(profileData)
-        .then((res) => {
-          toast.success(res?.data?.msg);
-          setIsEditable(false);
-          setOriginalData(profileData);
-        })
-        .catch((err) => {
-          console.error(err);
-          toast.error("Failed to update profile");
-        });
-    } else {
-      setIsEditable(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Split name into first and last
+    const [firstName, ...rest] = formData.name.trim().split(" ");
+    const lastName = rest.join(" ") || "";
+
+    const userpayload = {
+      firstName,
+      lastName,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      gender: formData.gender,
+      dob: formData.dob,
+      adharNumber: formData.adharNumber,
+    };
+
+    console.log("Submitting Payload:", userpayload);
+
+    const bankPayload = {
+      userId: getUserId(),
+      bankName: formData.bankName,
+      AccNo: formData.AccNo,
+      IFSC: formData.IFSC,
+    };
+    console.log(bankPayload);
+
+    try {
+      await editProfile(userpayload);
+
+      if (hasBankDetails) {
+        await updateBankDetails(getUserId(), bankPayload);
+      } else {
+        await createBankDetails(bankPayload);
+      }
+      // Your API call goes here
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      toast.error("Error updating profile. Please try again.");
+      console.error("Error updating profile:", err);
     }
   };
 
-  const handleCancel = () => {
-    setProfileData(originalData);
-    setIsEditable(false);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "ACTIVE": return "success";
-      case "INACTIVE": return "error";
-      default: return "primary";
-    }
-  };
-
-  const getRoleColor = (role) => {
-    switch (role) {
-      case "ADMIN": return "error";
-      case "MANAGER": return "warning";
-      case "TRAINER": return "info";
-      default: return "primary";
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not specified";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const getInitials = (name) => {
+    if (!name) return "?";
+    const words = name.trim().split(" ");
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
   };
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-        py: 8,
-        minHeight: "100vh",
-      }}
+    <motion.div
+      className="min-h-screen bg-gradient-to-tr from-gray-50 to-white p-4 md:p-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
     >
-      <Container maxWidth="md">
-        <Card
-          elevation={4}
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-          }}
+      <div className="max-w-6xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col md:flex-row">
+        {/* Left Panel */}
+        <motion.div
+          className="md:w-1/3 bg-blue-50 p-8 flex flex-col items-center justify-center text-center"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
         >
-          {/* Profile Header */}
-          <Box
-            sx={{
-              background: `linear-gradient(45deg, ${color.primary} 0%, ${color.secondary} 100%)`,
-              py: 4,
-              px: 4,
-              color: "white",
-              position: "relative",
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={3} flexWrap="wrap">
-              <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  fontSize: 32,
-                  bgcolor: "rgba(255,255,255,0.2)",
-                }}
+          <div className="w-32 h-32 rounded-full bg-blue-500 text-white flex items-center justify-center text-5xl font-bold shadow-lg mb-4">
+            {getInitials(getUserName())}
+          </div>
+
+          <h2 className="text-xl font-bold text-gray-800">{getUserName()}</h2>
+          <p className="text-sm text-blue-600 font-medium">{getUserRoll()}</p>
+        </motion.div>
+
+        {/* Right Panel */}
+        <motion.div
+          className="md:w-2/3 p-8 md:p-12"
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+            Update Profile
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputWithLabel
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Phone Number"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Date of Birth"
+                name="dob"
+                type="date"
+                value={formData.dob}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Aadhar Number"
+                name="adharNumber"
+                value={formData.adharNumber}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Bank Name"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="Account Number"
+                name="AccNo"
+                value={formData.AccNo}
+                onChange={handleChange}
+              />
+
+              <InputWithLabel
+                label="IFSC Code"
+                name="IFSC"
+                value={formData.IFSC}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="text-right">
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg transition"
               >
-                {profileData.firstName.charAt(0)}
-                {profileData.lastName.charAt(0)}
-              </Avatar>
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
-                  {profileData.firstName} {profileData.lastName}
-                </Typography>
-                <Box display="flex" gap={2} mt={1} flexWrap="wrap">
-                  <Chip
-                    label={profileData.role}
-                    color={getRoleColor(profileData.role)}
-                    size="medium"
-                    sx={{ 
-                      color: "white",
-                      fontWeight: 600,
-                      px: 1
-                    }}
-                  />
-                  <Chip
-                    label={profileData.status}
-                    color={getStatusColor(profileData.status)}
-                    size="medium"
-                    sx={{ 
-                      color: "white",
-                      fontWeight: 600,
-                      px: 1
-                    }}
-                  />
-                  {profileData.isVerified && (
-                    <Chip
-                      label="Verified"
-                      color="success"
-                      size="medium"
-                      sx={{ 
-                        color: "white",
-                        fontWeight: 600,
-                        px: 1
-                      }}
-                    />
-                  )}
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Profile Content */}
-          <Box sx={{ p: 4 }}>
-            <Grid container spacing={3}>
-              {/* Personal Information Section */}
-              <Grid item xs={12}>
-                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ 
-                  color: color.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}>
-                  <PersonIcon fontSize="small" /> Personal Information
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="First Name"
-                  name="firstName"
-                  value={profileData.firstName}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  icon={<PersonIcon />}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="Last Name"
-                  name="lastName"
-                  value={profileData.lastName}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="Gender"
-                  name="gender"
-                  value={profileData.gender}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  select
-                  options={["Male", "Female", "Other"]}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                {isEditable ? (
-                  <ProfileField
-                    label="Date of Birth"
-                    name="dob"
-                    value={profileData.dob || ""}
-                    editable={isEditable}
-                    handleChange={handleChange}
-                    type="date"
-                    icon={<CakeIcon />}
-                  />
-                ) : (
-                  <InfoCard
-                    label="Date of Birth"
-                    value={formatDate(profileData.dob)}
-                    icon={<CakeIcon color="primary" />}
-                  />
-                )}
-              </Grid>
-
-              {/* Contact Information Section */}
-              <Grid item xs={12} mt={2}>
-                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ 
-                  color: color.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}>
-                  <EmailIcon fontSize="small" /> Contact Information
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="Email"
-                  name="email"
-                  value={profileData.email}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  type="email"
-                  icon={<EmailIcon />}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="Phone Number"
-                  name="phoneNumber"
-                  value={profileData.phoneNumber}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  type="tel"
-                  icon={<PhoneIcon />}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <ProfileField
-                  label="Address"
-                  name="address"
-                  value={profileData.address}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  multiline
-                  rows={3}
-                  icon={<HomeIcon />}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <ProfileField
-                  label="Emergency Contact"
-                  name="emergencyContact"
-                  value={profileData.emergencyContact}
-                  editable={isEditable}
-                  handleChange={handleChange}
-                  type="tel"
-                  icon={<EmergencyIcon />}
-                />
-              </Grid>
-
-              {/* Employment Information Section */}
-              <Grid item xs={12} mt={2}>
-                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ 
-                  color: color.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1
-                }}>
-                  <WorkIcon fontSize="small" /> Employment Information
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <InfoCard
-                  label="Role"
-                  value={profileData.role}
-                  icon={<WorkIcon color="primary" />}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <InfoCard
-                  label="Status"
-                  value={profileData.status}
-                  icon={<WorkIcon color="primary" />}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <InfoCard
-                  label="Join Date"
-                  value={formatDate(profileData.joinDate)}
-                  icon={<EventIcon color="primary" />}
-                />
-              </Grid>
-
-              {/* Action Buttons */}
-              <Grid item xs={12} mt={4} display="flex" justifyContent="flex-end" gap={2}>
-                {isEditable ? (
-                  <>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      onClick={handleCancel}
-                      sx={{
-                        color: color.error,
-                        borderColor: color.error,
-                        "&:hover": {
-                          borderColor: color.error,
-                          backgroundColor: "rgba(244, 67, 54, 0.04)",
-                        },
-                        px: 3,
-                        py: 1,
-                        borderRadius: 2,
-                        fontWeight: 600
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<SaveIcon />}
-                      onClick={toggleEdit}
-                      sx={{
-                        bgcolor: color.success,
-                        "&:hover": {
-                          bgcolor: color.successDark,
-                        },
-                        px: 3,
-                        py: 1,
-                        borderRadius: 2,
-                        fontWeight: 600
-                      }}
-                    >
-                      Save Changes
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="contained"
-                    startIcon={<EditIcon />}
-                    onClick={toggleEdit}
-                    sx={{
-                      bgcolor: color.primary,
-                      "&:hover": {
-                        bgcolor: color.primaryDark,
-                      },
-                      px: 3,
-                      py: 1,
-                      borderRadius: 2,
-                      fontWeight: 600
-                    }}
-                  >
-                    Edit Profile
-                  </Button>
-                )}
-              </Grid>
-            </Grid>
-          </Box>
-        </Card>
-      </Container>
-    </Box>
+                Save Changes
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    </motion.div>
   );
-}
+};
 
-function ProfileField({
-  label,
-  name,
-  value,
-  editable,
-  handleChange,
-  select = false,
-  options = [],
-  type = "text",
-  multiline = false,
-  rows = 1,
-  icon
-}) {
-  return (
-    <TextField
-      label={label}
-      name={name}
-      value={value}
-      onChange={handleChange}
-      variant="outlined"
-      fullWidth
-      disabled={!editable}
-      select={select}
+// ✅ Input with label component
+const InputWithLabel = ({ label, name, value, onChange, type = "text" }) => (
+  <div className="flex flex-col">
+    <label htmlFor={name} className="text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
+    <input
       type={type}
-      size="small"
-      multiline={multiline}
-      rows={rows}
-      InputProps={{
-        startAdornment: icon ? (
-          <Box sx={{ mr: 1, color: 'action.active' }}>
-            {React.cloneElement(icon, { fontSize: 'small' })}
-          </Box>
-        ) : null,
-        sx: {
-          borderRadius: 2,
-          backgroundColor: editable ? "background.paper" : "action.disabledBackground",
-        },
-      }}
-      InputLabelProps={{
-        shrink: true,
-      }}
-    >
-      {select &&
-        options.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
-    </TextField>
-  );
-}
+      name={name}
+      id={name}
+      value={value}
+      onChange={onChange}
+      className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white transition-all"
+    />
+  </div>
+);
 
-function InfoCard({ label, value, icon }) {
-  return (
-    <Paper elevation={0} sx={{ 
-      p: 2,
-      borderRadius: 2,
-      border: '1px solid',
-      borderColor: 'divider',
-      backgroundColor: 'background.paper'
-    }}>
-      <Stack direction="row" alignItems="center" spacing={1.5}>
-        {icon && React.cloneElement(icon, { fontSize: 'small' })}
-        <Box>
-          <Typography variant="subtitle2" color="textSecondary">
-            {label}
-          </Typography>
-          <Typography variant="body1" fontWeight={500}>
-            {value}
-          </Typography>
-        </Box>
-      </Stack>
-    </Paper>
-  );
-}
+export default Profile;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserCurrency, getExchangeRate } from "../currencyUtils";
+import { getAllPaymentForAdmin } from "../../services/Service";
 
 const PricingSection = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -8,47 +9,22 @@ const PricingSection = () => {
   const [exchangeRate, setExchangeRate] = useState(1);
   const navigate = useNavigate();
 
-  const basePlans = [
-    {
-      name: "Standard",
-      price: 499,
-      period: "per month",
-      description: "This pack contains all the basic things...",
-      features: [
-        "Try free for 7 days",
-        "Unlimited articles and podcasts",
-        "Unlimited access to yoga classes",
-        "Discount on select trainings",
-      ],
-      popular: false,
-    },
-    {
-      name: "Projected",
-      price: 1499,
-      period: "per month",
-      description: "This pack contains all the basic things...",
-      features: [
-        "Try free for 7 days",
-        "Unlimited articles and podcasts",
-        "Unlimited access to yoga classes",
-        "Discount on select trainings",
-      ],
-      popular: false,
-    },
-    {
-      name: "Private",
-      price: 4499,
-      period: "per month",
-      description: "This pack contains all the basic things...",
-      features: [
-        "Try free for 7 days",
-        "Unlimited articles and podcasts",
-        "Unlimited access to yoga classes",
-        "Discount on select trainings",
-      ],
-      popular: false,
-    },
-  ];
+  const [basePlans, setBasePlans] = useState([]);
+  useEffect(() => {
+    const payLoad = {
+      data: { filter: "" },
+      page: 0,
+      pageSize: 50,
+      order: [["createdAt", "ASC"]],
+    };
+    getAllPaymentForAdmin(payLoad)
+      .then((res) => {
+        setBasePlans(res?.data?.data?.rows);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   useEffect(() => {
     const fetchCurrency = async () => {
@@ -97,7 +73,7 @@ const PricingSection = () => {
                   <span className="text-4xl font-extrabold">
                     {formatPrice(plan.price)}
                   </span>
-                  <span className="ml-2 mb-1">/{plan.period}</span>
+                  <span className="ml-2 mb-1">/{plan.period} Month</span>
                 </div>
                 <p className="mb-6">{plan.description}</p>
                 <ul className="mb-8 space-y-3">

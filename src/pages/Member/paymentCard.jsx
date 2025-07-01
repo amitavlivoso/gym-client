@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -13,49 +13,33 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { toast } from "react-toastify";
 import RenderRazorpay from "../../components/Payment/RenderPayment";
-import { createOrder } from "../../services/Service";
+import { createOrder, getAllPaymentForUser } from "../../services/Service";
 import { getUserId } from "../../services/axiosClient";
 import { useLocation } from "react-router-dom";
 
-const plans = [
-  {
-    id: "basic",
-    name: "Basic Plan",
-    price: 499,
-    duration: "1 Month",
-    features: ["Gym Access", "1 Free Trainer Session"],
-    popular: false,
-  },
-  {
-    id: "standard",
-    name: "Standard Plan",
-    price: 1299,
-    duration: "3 Months",
-    features: ["Gym Access", "3 Trainer Sessions", "Diet Plan"],
-    popular: true, // most popular
-  },
-  {
-    id: "premium",
-    name: "Premium Plan",
-    price: 4499,
-    duration: "12 Months",
-    features: [
-      "All Access",
-      "Unlimited Trainer",
-      "Diet Plan",
-      "Merchandise Pack",
-    ],
-    popular: false,
-  },
-];
-
 const PaymentCardPage = () => {
+  const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
   const theme = useTheme();
   const location = useLocation();
   const userId = location.state?.userId;
   console.log(userId);
+
+  useEffect(() => {
+    const payLoad = {
+      data: { filter: "" },
+      page: 0,
+      pageSize: 50,
+      order: [["createdAt", "ASC"]],
+    };
+    getAllPaymentForUser(payLoad)
+      .then((res) => {
+        const rows = res?.data?.data?.rows || [];
+        setPlans(rows);
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   const handleSelect = (id) => {
     setSelectedPlan(id);
@@ -233,7 +217,7 @@ const PaymentCardPage = () => {
                       ₹{plan.price}
                     </Typography>
                     <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                      / {plan.duration}
+                      / {plan.period} Months
                     </Typography>
                   </Box>
 

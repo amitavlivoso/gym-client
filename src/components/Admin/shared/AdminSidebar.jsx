@@ -50,41 +50,58 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
     return initials;
   };
 
-  const navItems = getUserRoll() === "SuperAdmin"
-  ? [
-      {
-        text: "Dashboard",
-        icon: <DashboardIcon />,
-        to: "/superadmin/dashboard",
-      },
-      {
-        text: "Admin",
-        icon: <PeopleIcon />,
-        subItems: [
+  const navItems =
+    getUserRoll() === "SuperAdmin"
+      ? [
           {
-            text: "Add Admin",
-            icon: <PersonAddIcon />,
-            to: "/superadmin/dashboard/add-admin",
+            text: "Dashboard",
+            icon: <DashboardIcon />,
+            to: "/superadmin/dashboard",
           },
           {
-            text: "Admin Table",
-            icon: <TableChartIcon />,
-            to: "/superadmin/dashboard/admin-table",
+            text: "Admin",
+            icon: <PeopleIcon />,
+            subItems: [
+              {
+                text: "Add Admin",
+                icon: <PersonAddIcon />,
+                to: "/superadmin/dashboard/add-admin",
+              },
+              {
+                text: "Admin Table",
+                icon: <TableChartIcon />,
+                to: "/superadmin/dashboard/admin-table",
+              },
+              {
+                text: "Active Admin",
+                icon: <ActiveMemberIcon />,
+                to: "/superadmin/dashboard/active-admin",
+              },
+              {
+                text: "Inactive Admin",
+                icon: <InactiveMemberIcon />,
+                to: "/superadmin/dashboard/inactive-admin",
+              },
+            ],
           },
           {
-            text: "Active Admin",
-            icon: <ActiveMemberIcon />,
-            to: "/superadmin/dashboard/active-admin",
+            text: "Payments",
+            icon: <PaymentIcon />,
+            subItems: [
+              {
+                text: "Add Admin Payment",
+                icon: <PaymentIcon />,
+                to: "/superadmin/dashboard/payment-create-for-admin",
+              },
+              {
+                text: "Payment Table",
+                icon: <TableChartIcon />,
+                to: "/superadmin/dashboard/all-payment-create-for-admin",
+              },
+            ],
           },
-          {
-            text: "Inactive Admin",
-            icon: <InactiveMemberIcon />,
-            to: "/superadmin/dashboard/inactive-admin",
-          },
-        ],
-      },
-    ]:
-    getUserRoll() === "Admin" || getUserRoll() === "Receptionist"
+        ]
+      : getUserRoll() === "Admin" || getUserRoll() === "Receptionist"
       ? [
           {
             text: "Dashboard",
@@ -95,6 +112,11 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
             text: "Payments",
             icon: <PaymentIcon />,
             to: "/admin/dashboard/payment",
+          },
+          {
+            text: "Payments For User",
+            icon: <PaymentIcon />,
+            to: "/admin/dashboard/all-payment-create-for-user",
           },
           {
             text: "Member",
@@ -239,12 +261,12 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
                 {
                   text: "Workout Plans",
                   icon: <FitnessCenterIcon />,
-                  to: `/admin/dashboard/workoutplan`,
+                  to: `/member/dashboard/individual-member-workoutplan`,
                 },
                 {
                   text: "Nutrition Plans",
                   icon: <RestaurantIcon />,
-                  to: `/admin/dashboard/nutrition`,
+                  to: `/admin/dashboard/individual-member-nutritionplan`,
                 },
                 {
                   text: "Equipment",
@@ -254,14 +276,14 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
               ]
             : [
                 {
-                  text: "Payments",
-                  icon: <PaymentIcon />,
-                  to: "/admin/payments",
-                },
-                {
                   text: "Workout Plans",
                   icon: <FitnessCenterIcon />,
-                  to: `/${role}/workouts`,
+                  to: `/${role}/dashboard/workoutplan`,
+                },
+                {
+                  text: "Nutrition Plans",
+                  icon: <RestaurantIcon />,
+                  to: `/${role}/dashboard/nutrition`,
                 },
               ]),
           ...(getUserRoll() !== "Member"
@@ -278,7 +300,7 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
                     {
                       text: "Members",
                       icon: <PeopleIcon />,
-                      to: `/${role}/members`,
+                      to: `/${role}/dashboard/members`,
                     },
                   ],
                 },

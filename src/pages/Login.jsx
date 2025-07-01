@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 
 import { useFormik } from "formik";
 import { loginValidation } from "../components/shared/Schema";
-import { Signin } from "../services/Service";
+import { getPayment, Signin } from "../services/Service";
 import { setCurrentAccessToken } from "../services/axiosClient";
 import color from "../components/shared/Color";
 
@@ -18,6 +18,19 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  function isExpired(expiresAt) {
+    if (!expiresAt) return true;
+    if (typeof expiresAt === "string" && expiresAt.includes("0")) return true;
+
+    const expiryDate = new Date(expiresAt);
+    const today = new Date();
+
+    // Optional: normalize to dates without time
+    expiryDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return expiryDate < today;
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -32,29 +45,47 @@ const Login = () => {
           email: values.email,
           password: values.password,
         };
-        Signin(payLoad)
-          .then((res) => {
-            console.log(res);
-            const accessToken = res?.data?.data?.accessToken;
-            const role = res?.data?.data?.role?.toLowerCase();
-            const status = res?.data?.data?.status;
-            setCurrentAccessToken(accessToken);
-            if (status !== "ACTIVE") {
-              navigate("/paymentpage");
+        const res = await Signin(payLoad);
+
+        console.log(res);
+
+        const accessToken = res?.data?.data?.accessToken;
+        const role = res?.data?.data?.role?.toLowerCase();
+        const status = res?.data?.data?.status;
+        const userId = res?.data?.data?.id;
+
+        setCurrentAccessToken(accessToken);
+
+        // Check payment expiry
+        const paymentRes = await getPayment(userId);
+        const expiresAt = paymentRes?.data?.data?.expiresAt;
+
+        if (role === "Member") {
+          if (!expiresAt || expiresAt === "0 days" || isExpired(expiresAt)) {
+            // Payment expired or missing
+            navigate("/paymentpage", {
+              state: { userId: res?.data?.data?.id },
+            });
+            return;
+          }
+        } else {
+          if (status !== "ACTIVE") {
+            navigate("/paymentpage", {
+              state: { userId: res?.data?.data?.id },
+            });
+          } else {
+            if (role) {
+              window.location.href = `#/${role}/dashboard`;
             } else {
-              if (role) {
-                window.location.href = `#/${role}/dashboard`;
-              } else {
-                console.error("Role is missing in response");
-              }
+              console.error("Role is missing in response");
             }
-          })
-          .catch((err) => {
-            console.error(err);
-            toast.error("Login failed. Please check credentials.");
-          });
+          }
+        }
+
+        // Check user status
       } catch (error) {
-        toast.error("An error occurred. Please try again.");
+        console.error(error);
+        toast.error("Login failed. Please check credentials.");
       } finally {
         setIsLoading(false);
       }

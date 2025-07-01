@@ -24,11 +24,11 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  
   getMemberWithAttendance,
   getUser,
   getAllPayment,
 } from "../../services/Service";
+import { getUserRoll } from "../../services/axiosClient";
 
 const MemberDetails = () => {
   const { id } = useParams();
@@ -168,42 +168,47 @@ const MemberDetails = () => {
           </LineChart>
         </ResponsiveContainer>
       </Paper>
-
-      {/* Payment Section */}
-      <Typography variant="h5" gutterBottom>
-        💳 Payment Summary
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
-        <Typography variant="h6" mb={2}>
-          Total Paid: ₹{paymentTotal.toLocaleString()}
-        </Typography>
-        <Divider sx={{ mb: 3 }} />
-        {payments.length > 0 ? (
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={payments}
-                dataKey="amount"
-                nameKey="month"
-                outerRadius={90}
-                label
-              >
-                {payments.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            No payment records found.
+      {getUserRoll() === "Admin" || getUserRoll() === "Receptionist" ? (
+        <>
+          <Typography variant="h5" gutterBottom>
+            💳 Payment Summary
           </Typography>
-        )}
-      </Paper>
+          <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h6" mb={2}>
+              Total Paid: ₹{paymentTotal.toLocaleString()}
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            {payments.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={payments}
+                    dataKey="amount"
+                    nameKey="month"
+                    outerRadius={90}
+                    label
+                  >
+                    {payments.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No payment records found.
+              </Typography>
+            )}
+          </Paper>
+        </>
+      ) : (
+        <></>
+      )}
+      {/* Payment Section */}
     </Box>
   );
 };

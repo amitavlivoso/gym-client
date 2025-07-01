@@ -26,41 +26,37 @@ import {
   editUser,
   getPayment,
   updatePayment,
+  getAllPaymentForUser,
 } from "../../../services/Service";
 import { membervalidationSchema } from "../../../components/shared/Schema";
 import { toast } from "react-toastify";
 import color from "../../../components/shared/Color";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const planOptions = [
-  { label: "3 Months", value: "3month", price: 3000 },
-  { label: "6 Months", value: "6month", price: 5500 },
-  { label: "9 Months", value: "9month", price: 8000 },
-  { label: "12 Months", value: "12month", price: 10000 },
-];
-
 const calculateExpirationDate = (planName) => {
   let daysToAdd = 0;
 
   switch (planName) {
     case "3month":
-      daysToAdd = 90;  // 3 months = 90 days
+      daysToAdd = 90;
       break;
     case "6month":
-      daysToAdd = 180; // 6 months = 180 days
+      daysToAdd = 180;
       break;
     case "9month":
-      daysToAdd = 270; // 9 months = 270 days
+      daysToAdd = 270;
       break;
     case "12month":
-      daysToAdd = 365; // 12 months = 365 days
+      daysToAdd = 365;
       break;
     default:
-      daysToAdd = 30;  // Default to 1 month if no match
+      daysToAdd = 30;
   }
 
   const paidAt = new Date();
-  const expirationDate = new Date(paidAt.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+  const expirationDate = new Date(
+    paidAt.getTime() + daysToAdd * 24 * 60 * 60 * 1000
+  );
 
   return expirationDate;
 };
@@ -77,22 +73,46 @@ const roleOptions = [
 const statusOptions = ["ACTIVE", "INACTIVE"];
 const paymentModeOptions = ["Cash", "Card", "UPI"];
 
-const AutoUpdatePaymentAmount = () => {
-  const { values, setFieldValue } = useFormikContext();
-
-  useEffect(() => {
-    const selectedPlan = planOptions.find(
-      (plan) => plan.value === values.planName
-    );
-    if (selectedPlan) {
-      setFieldValue("paymentAmount", selectedPlan.price);
-    }
-  }, [values.planName, setFieldValue]);
-
-  return null;
-};
-
 const AddMember = ({ role }) => {
+  const [planOptions, setPlanOptions] = useState([]);
+
+  const payLoad = {
+    data: { filter: "" },
+    page: 0,
+    pageSize: 50,
+    order: [["createdAt", "ASC"]],
+  };
+  useEffect(() => {
+    getAllPaymentForUser(payLoad)
+      .then((res) => {
+        const plans = res?.data?.data?.rows || [];
+
+        // Map your backend data into the planOptions format
+        const extractedOptions = plans.map((plan) => ({
+          label: `${plan.period} Months`,
+          value: `${plan.period}month`,
+          price: plan.price,
+        }));
+
+        setPlanOptions(extractedOptions);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  const AutoUpdatePaymentAmount = () => {
+    const { values, setFieldValue } = useFormikContext();
+
+    useEffect(() => {
+      const selectedPlan = planOptions.find(
+        (plan) => plan.value === values.planName
+      );
+      if (selectedPlan) {
+        setFieldValue("paymentAmount", selectedPlan.price);
+      }
+    }, [values.planName, setFieldValue]);
+
+    return null;
+  };
   const theme = useTheme();
   const location = useLocation();
   const userId = location?.state?.id;
@@ -226,11 +246,9 @@ const AddMember = ({ role }) => {
 
               if (!isEdit && values.role === "Member" && id) {
                 const paidAt = new Date();
-                 const expirationDate = calculateExpirationDate(values.planName);
+                const expirationDate = calculateExpirationDate(values.planName);
 
-
-                const expiresAt = expirationDate
-                
+                const expiresAt = expirationDate;
 
                 const paymentPayload = {
                   userId: id,
@@ -240,7 +258,7 @@ const AddMember = ({ role }) => {
                   paidAt: paidAt.toISOString().split("T")[0], // YYYY-MM-DD
                   expiresAt: expiresAt.toISOString().split("T")[0], // YYYY-MM-DD
                 };
-                console.log(paymentPayload)
+                console.log(paymentPayload);
 
                 try {
                   await addPayment(paymentPayload);

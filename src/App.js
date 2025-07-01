@@ -37,6 +37,14 @@ import AdminTable from "./components/SuperAdmin/AdminTable";
 import AddAdmin from "./components/SuperAdmin/AddAdmin";
 import ActiveAdminTable from "./components/SuperAdmin/ActiveAdmin";
 import InActiveAdminTable from "./components/SuperAdmin/InActiveAdmin";
+import CreatePaymentForUser from "./pages/Admin/PaymentCreatepage";
+import PaymentTableForUser from "./pages/Admin/PaymentTableForUser";
+import PaymentTableForAdmin from "./pages/SuperAdmin/PaymentTableForAdmin";
+import CreatePaymentForAdmin from "./pages/SuperAdmin/PaymentCreatepage";
+import IndividualWorkoutPlansPage from "./components/Member/DashBoard/IndividualWorkoutplan";
+import WorkoutPlans from "./components/Member/WorkoutPlan";
+import IndividualNutritionPlansPage from "./pages/Admin/Member/IndividualNutrition";
+import NutritionIndividualPlansPage from "./pages/Member/NutritionIndividual";
 
 function App() {
   return (
@@ -51,7 +59,7 @@ function App() {
           <Route path="join" element={<JoinUsForm />} />
           <Route path="paymentpage" element={<PaymentCardPage />} />
           <Route path="about" element={<AboutUs />} />
-          <Route path="/contact" element={<ContactUs />} />
+          <Route path="contact" element={<ContactUs />} />
         </Route>
 
         <Route path="/:role/dashboard" element={<RoleLayout />}>
@@ -102,12 +110,44 @@ function App() {
           <Route path="inactive-member" element={<InActiveMember />} />
           <Route path="attendnance" element={<AttendancePage />} />
           <Route path="workoutplan" element={<WorkoutPlansPage />} />
+          <Route
+            path="member-workoutplan"
+            element={<IndividualWorkoutPlansPage />}
+          />
+          <Route
+            path="member-nutritionplan"
+            element={<IndividualNutritionPlansPage />}
+          />
+          <Route
+            path="individual-member-workoutplan"
+            element={<WorkoutPlans />}
+          />
+          <Route
+            path="individual-member-nutritionplan"
+            element={<NutritionIndividualPlansPage />}
+          />
           <Route path="nutrition" element={<NutritionPlansPage />} />
           <Route path="equipment" element={<EquipmentPlansPage />} />
           <Route path="add-workoutplan" element={<WorkoutPlanForm />} />
           <Route path="add-equipment" element={<EquipmentForm />} />
           <Route path="add-nutrition" element={<NutritionPlanForm />} />
           <Route path="profile" element={<Profile />} />
+          <Route
+            path="payment-create-for-user"
+            element={<CreatePaymentForUser />}
+          />
+          <Route
+            path="all-payment-create-for-user"
+            element={<PaymentTableForUser />}
+          />
+          <Route
+            path="payment-create-for-admin"
+            element={<CreatePaymentForAdmin />}
+          />
+          <Route
+            path="all-payment-create-for-admin"
+            element={<PaymentTableForAdmin />}
+          />
         </Route>
       </Routes>
       <ToastContainer />
