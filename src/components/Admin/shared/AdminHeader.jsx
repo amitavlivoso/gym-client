@@ -24,10 +24,16 @@ import {
 } from "../../../services/axiosClient";
 import { Link } from "react-router-dom";
 import DateRangeSelector from "./DateRangeSelector";
-import { getAllPayment, getPayment, getUser } from "../../../services/Service";
+import {
+  getAllPayment,
+  getPayment,
+  getProfile,
+  getUser,
+} from "../../../services/Service";
 
 const AdminHeader = () => {
   const [members, setMembers] = useState([]);
+
   const [leads, setLeads] = useState([]);
   const [selectedYear, setSelectedYear] = useState("2025");
   const [memberTrendData, setMemberTrendData] = useState([]);
@@ -70,6 +76,37 @@ const AdminHeader = () => {
     });
   }
 
+  const [user, setUser] = useState(null);
+  const [trialDaysRemaining, setTrialDaysRemaining] = useState(null);
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        console.log("Profile response:", res);
+
+        if (res?.data?.data) {
+          const userData = res.data.data;
+          setUser(userData);
+
+          if (userData.role === "Admin" && userData.trialStartDate) {
+            const startDate = new Date(userData.trialStartDate);
+            const now = new Date();
+
+            // Calculate difference in days
+            const diffInMs = now - startDate;
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+            const remaining = Math.max(0, 7 - diffInDays);
+            setTrialDaysRemaining(remaining);
+          } else {
+            setTrialDaysRemaining(null);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching profile:", err);
+      });
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       const payload = {
@@ -498,8 +535,8 @@ const AdminHeader = () => {
                   <CalendarIcon className="text-primary me-2" />
                   <span className="fw-semibold">
                     {getUserRoll() === "Member"
-                      ? `${remainingDays - 1} Days to Renew`
-                      : "7 Days to Renew"}
+                      ? `${remainingDays} Days to Renew`
+                      : `${trialDaysRemaining} Days to Renew`}
                   </span>
                 </>
               )}

@@ -40,7 +40,6 @@ const AdminLayout = () => {
         />
 
         {/* Toolbar provides proper spacing below the AppBar */}
-        <Toolbar />
 
         <Box
           sx={{

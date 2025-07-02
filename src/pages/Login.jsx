@@ -85,7 +85,7 @@ const Login = () => {
         // Check user status
       } catch (error) {
         console.error(error);
-        toast.error("Login failed. Please check credentials.");
+        toast.error(error.response.data.msg);
       } finally {
         setIsLoading(false);
       }

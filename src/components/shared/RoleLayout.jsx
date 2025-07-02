@@ -6,7 +6,7 @@ const allowedLayouts = {
   receptionist: AdminLayout,
   trainer: AdminLayout,
   member: AdminLayout,
-  superadmin:AdminLayout,
+  superadmin: AdminLayout,
 };
 
 const RoleLayout = () => {

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getUserRoll } from "../../services/axiosClient";
-import { getAllWorkoutPlans } from "../../services/Service";
-import { getUserId } from "../../services/axiosClient";
+import { getUserRoll, getUserId } from "../../services/axiosClient";
+import { getAllWorkoutPlans, updateWorkoutPlan } from "../../services/Service";
 
 const WorkoutPlans = () => {
   const navigate = useNavigate();
@@ -13,19 +12,41 @@ const WorkoutPlans = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const payLoad = {
-      data: { filter: "", userId: getUserId() },
-      page: 0,
-      pageSize: 50,
-      order: [["createdAt", "ASC"]],
+    const fetchPlans = async () => {
+      try {
+        const payLoad = {
+          data: { filter: "", userId: getUserId() },
+          page: 0,
+          pageSize: 50,
+          order: [["createdAt", "ASC"]],
+        };
+        const res = await getAllWorkoutPlans(payLoad);
+        setPlans(res?.data?.data?.rows || []);
+      } catch (error) {
+        console.error("Error fetching workout plans:", error);
+      }
     };
-    getAllWorkoutPlans(payLoad).then((res) => {
-      setPlans(res?.data?.data?.rows || []);
-    });
+
+    fetchPlans();
   }, [userId]);
 
+  const handleComplete = async (plan) => {
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      await updateWorkoutPlan(plan.id, { toDate: today, isCompleted: true });
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === plan.id ? { ...p, toDate: today, isCompleted: true } : p
+        )
+      );
+    } catch (error) {
+      console.error("Error updating workout plan:", error);
+      alert("Failed to mark as completed.");
+    }
+  };
+
   const filteredPlans = plans.filter((plan) =>
-    plan.title.toLowerCase().includes(search.toLowerCase())
+    plan.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -33,7 +54,7 @@ const WorkoutPlans = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Workout Plans</h2>
-          {getUserRoll() === "Admin" || getUserRoll() === "Trainer" ? (
+          {(getUserRoll() === "Admin" || getUserRoll() === "Trainer") && (
             <button
               onClick={() =>
                 navigate("/admin/dashboard/add-workoutplan", {
@@ -44,7 +65,7 @@ const WorkoutPlans = () => {
             >
               + Add Plan
             </button>
-          ) : null}
+          )}
         </div>
 
         {/* Search Bar */}
@@ -70,12 +91,13 @@ const WorkoutPlans = () => {
                 <th className="px-4 py-3">Workouts/Week</th>
                 <th className="px-4 py-3">From Date</th>
                 <th className="px-4 py-3">To Date</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPlans.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-6 text-gray-500">
+                  <td colSpan="8" className="text-center py-6 text-gray-500">
                     No plans found.
                   </td>
                 </tr>
@@ -89,6 +111,19 @@ const WorkoutPlans = () => {
                     <td className="px-4 py-2">{plan.workoutsPerWeek} hr</td>
                     <td className="px-4 py-2">{plan.fromDate || "-"}</td>
                     <td className="px-4 py-2">{plan.toDate || "-"}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => handleComplete(plan)}
+                        disabled={!!plan.toDate}
+                        className={`px-3 py-1 rounded ${
+                          plan.toDate
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-green-500 text-white hover:bg-green-600"
+                        }`}
+                      >
+                        {plan.isCompleted ? "Completed" : "Complete"}
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

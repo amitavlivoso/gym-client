@@ -1,3 +1,4 @@
+import color from "../../shared/Color";
 import {
   Box,
   Typography,
@@ -19,14 +20,17 @@ import {
   DialogActions,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { deleteUser, getAllUser } from "../../../services/Service";
+import { deleteUser, editUser, getAllUser } from "../../../services/Service";
 import { toast } from "react-toastify";
 
-const NutritionPlan = () => {
+const AssignTrainer = () => {
   const navigate = useNavigate();
   const { role } = useParams();
 
@@ -38,38 +42,87 @@ const NutritionPlan = () => {
   const [membershipFilter, setMembershipFilter] = useState("All");
   const [members, setMembers] = useState([]);
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedAssignMember, setSelectedAssignMember] = useState(null);
+  const [selectedTrainer, setSelectedTrainer] = useState("");
+  const [trainerList, setTrainerList] = useState([]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
 
-  const payLoad = {
-    data: { filter: "", role: "Member" },
-    page: 0,
-    pageSize: 50,
-    order: [["createdAt", "ASC"]],
-  };
-
   useEffect(() => {
-    getAllUser(payLoad)
-      .then((res) => {
+    const loadMembers = async () => {
+      try {
+        const res = await getAllUser({
+          data: { filter: "", role: "Member" },
+          page: 0,
+          pageSize: 50,
+          order: [["createdAt", "ASC"]],
+        });
         setMembers(res?.data?.data?.rows || []);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const loadTrainers = async () => {
+      try {
+        const res = await getAllUser({
+          data: { filter: "", role: "Trainer" },
+          page: 0,
+          pageSize: 50,
+          order: [["createdAt", "ASC"]],
+        });
+        setTrainerList(res?.data?.data?.rows || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadMembers();
+    loadTrainers();
   }, []);
+
+  const handleAddMember = () => {
+    navigate(`/${role}/dashboard/add-member`);
+  };
 
   const handleDelete = (id) => {
     deleteUser(id)
       .then(() => {
         setMembers((prev) => prev.filter((member) => member.id !== id));
-        toast("Member Deleted Successfully");
+        toast.success("Member Deleted Successfully");
       })
       .catch((err) => {
         console.error("Error deleting user:", err);
+        toast.error("Failed to delete member.");
       });
+  };
+
+  const handleAssignTrainer = async () => {
+    if (!selectedTrainer) {
+      toast.error("Please select a trainer.");
+      return;
+    }
+
+    try {
+      await editUser(selectedAssignMember.id, { trainerId: selectedTrainer });
+      toast.success("Trainer assigned successfully!");
+
+      // Optionally update local state
+      setMembers((prev) =>
+        prev.map((member) =>
+          member.id === selectedAssignMember.id
+            ? { ...member, trainerId: selectedTrainer }
+            : member
+        )
+      );
+
+      setAssignDialogOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to assign trainer.");
+    }
   };
 
   const filteredMembers = members.filter((member) => {
@@ -77,13 +130,10 @@ const NutritionPlan = () => {
     const matchesSearch =
       name.toLowerCase().includes(searchText.toLowerCase()) ||
       member.email.toLowerCase().includes(searchText.toLowerCase());
-
     const matchesStatus =
       statusFilter === "All" || member.status === statusFilter;
-
     const matchesMembership =
       membershipFilter === "All" || member.membership === membershipFilter;
-
     return matchesSearch && matchesStatus && matchesMembership;
   });
 
@@ -146,9 +196,42 @@ const NutritionPlan = () => {
       ),
     },
     {
+      field: "assignTrainer",
+      headerName: "Trainer",
+      minWidth: 150,
+      renderCell: (params) => {
+        const trainerId = params.row.trainerId;
+        const trainer = trainerList.find((t) => t.id === trainerId);
+
+        if (trainer) {
+          return (
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {trainer.firstName} {trainer.lastName}
+            </Typography>
+          );
+        }
+
+        return (
+          <Button
+            variant="outlined"
+            size="small"
+            color="secondary"
+            onClick={() => {
+              setSelectedAssignMember(params.row);
+              setSelectedTrainer("");
+              setAssignDialogOpen(true);
+            }}
+          >
+            Assign
+          </Button>
+        );
+      },
+    },
+
+    {
       field: "actions",
       headerName: "Actions",
-      minWidth: isMobile ? 100 : 140,
+      minWidth: isMobile ? 120 : 150,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Tooltip title="View">
@@ -156,14 +239,42 @@ const NutritionPlan = () => {
               size="small"
               color="info"
               onClick={() =>
-                navigate(`/${role}/dashboard/member-nutritionplan`, {
+                navigate(`/${role}/dashboard/member/${params.row.id}`, {
                   state: {
-                    id: params.row.id,
+                    name: params.row.name,
+                    email: params.row.email,
                   },
                 })
               }
             >
               <VisibilityIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Edit">
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() =>
+                navigate(`/${role}/dashboard/add-member`, {
+                  state: { id: params.row.id },
+                })
+              }
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setMemberToDelete(params.row);
+                setDeleteDialogOpen(true);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
@@ -185,8 +296,18 @@ const NutritionPlan = () => {
         }}
       >
         <Typography variant="h5" fontWeight={600}>
-          WorkOut Plan Management
+          Member Management
         </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddMember}
+          fullWidth={isMobile}
+          size={isMobile ? "small" : "medium"}
+          sx={{ backgroundColor: color.firstColor }}
+        >
+          Add Member
+        </Button>
       </Box>
 
       {/* Search and Filter */}
@@ -217,6 +338,7 @@ const NutritionPlan = () => {
           }}
           size="small"
         />
+
         <Box
           sx={{
             display: "flex",
@@ -281,56 +403,40 @@ const NutritionPlan = () => {
         </Box>
       </Paper>
 
-      {/* Edit Member Dialog */}
+      {/* Assign Trainer Dialog */}
       <Dialog
-        open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
+        open={assignDialogOpen}
+        onClose={() => setAssignDialogOpen(false)}
         fullWidth
       >
-        <DialogTitle>Edit Member</DialogTitle>
+        <DialogTitle>Assign Trainer</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
-          <TextField
-            label="First Name"
-            value={selectedMember?.firstName || ""}
-            onChange={(e) =>
-              setSelectedMember({
-                ...selectedMember,
-                firstName: e.target.value,
-              })
-            }
-            fullWidth
-          />
-          <TextField
-            label="Last Name"
-            value={selectedMember?.lastName || ""}
-            onChange={(e) =>
-              setSelectedMember({
-                ...selectedMember,
-                lastName: e.target.value,
-              })
-            }
-            fullWidth
-          />
-          <TextField
-            label="Email"
-            value={selectedMember?.email || ""}
-            onChange={(e) =>
-              setSelectedMember({
-                ...selectedMember,
-                email: e.target.value,
-              })
-            }
-            fullWidth
-          />
+          <Typography>
+            Assign a trainer to <strong>{selectedAssignMember?.name}</strong>
+          </Typography>
+          <FormControl fullWidth size="small">
+            <InputLabel>Trainer</InputLabel>
+            <Select
+              label="Trainer"
+              value={selectedTrainer}
+              onChange={(e) => setSelectedTrainer(e.target.value)}
+            >
+              {trainerList.map((trainer) => (
+                <MenuItem key={trainer.id} value={trainer.id}>
+                  {trainer.firstName} {trainer.lastName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} color="secondary">
+          <Button onClick={() => setAssignDialogOpen(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={() => setEditDialogOpen(false)} variant="contained">
-            Save
+          <Button variant="contained" onClick={handleAssignTrainer}>
+            Assign
           </Button>
         </DialogActions>
       </Dialog>
@@ -370,4 +476,4 @@ const NutritionPlan = () => {
   );
 };
 
-export default NutritionPlan;
+export default AssignTrainer;

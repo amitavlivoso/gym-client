@@ -1,3 +1,4 @@
+import color from "../shared/Color";
 import {
   Box,
   Typography,
@@ -19,14 +20,16 @@ import {
   DialogActions,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { deleteUser, getAllUser } from "../../../services/Service";
+import { deleteUser, getAllUser } from "../../services/Service";
 import { toast } from "react-toastify";
+import { getUserId, getUserRoll } from "../../services/axiosClient";
 
-const NutritionPlan = () => {
+const TrainerMemberTable = () => {
   const navigate = useNavigate();
   const { role } = useParams();
 
@@ -45,7 +48,7 @@ const NutritionPlan = () => {
   const [memberToDelete, setMemberToDelete] = useState(null);
 
   const payLoad = {
-    data: { filter: "", role: "Member" },
+    data: { filter: "", role: "Member", trainerId: getUserId() },
     page: 0,
     pageSize: 50,
     order: [["createdAt", "ASC"]],
@@ -60,6 +63,10 @@ const NutritionPlan = () => {
         console.log(err);
       });
   }, []);
+
+  const handleAddMember = () => {
+    navigate(`/${role}/dashboard/add-member`);
+  };
 
   const handleDelete = (id) => {
     deleteUser(id)
@@ -156,9 +163,10 @@ const NutritionPlan = () => {
               size="small"
               color="info"
               onClick={() =>
-                navigate(`/${role}/dashboard/member-nutritionplan`, {
+                navigate(`/${role}/dashboard/member/${params.row.id}`, {
                   state: {
-                    id: params.row.id,
+                    name: params.row.name,
+                    email: params.row.email,
                   },
                 })
               }
@@ -185,8 +193,22 @@ const NutritionPlan = () => {
         }}
       >
         <Typography variant="h5" fontWeight={600}>
-          WorkOut Plan Management
+          {getUserRoll() === "Trainer" ? (
+            <>My Member Management</>
+          ) : (
+            <>Member Management</>
+          )}
         </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddMember}
+          fullWidth={isMobile}
+          size={isMobile ? "small" : "medium"}
+          sx={{ backgroundColor: color.firstColor }}
+        >
+          Add Member
+        </Button>
       </Box>
 
       {/* Search and Filter */}
@@ -217,6 +239,7 @@ const NutritionPlan = () => {
           }}
           size="small"
         />
+
         <Box
           sx={{
             display: "flex",
@@ -370,4 +393,4 @@ const NutritionPlan = () => {
   );
 };
 
-export default NutritionPlan;
+export default TrainerMemberTable;

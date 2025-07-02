@@ -45,6 +45,10 @@ import IndividualWorkoutPlansPage from "./components/Member/DashBoard/Individual
 import WorkoutPlans from "./components/Member/WorkoutPlan";
 import IndividualNutritionPlansPage from "./pages/Admin/Member/IndividualNutrition";
 import NutritionIndividualPlansPage from "./pages/Member/NutritionIndividual";
+import AssignTrainer from "./components/Admin/Dashboard/AssignTrainer";
+import TrainerMemberTable from "./components/Trainer/MemberTable";
+import PayForUser from "./components/Admin/Dashboard/payForUser";
+import PaymentForm from "./components/Admin/Dashboard/PaymentForm";
 
 function App() {
   return (
@@ -97,12 +101,14 @@ function App() {
           <Route path="payment" element={<PaymentPage />} />
           <Route path="member/:id" element={<MemberDetails />} />
           <Route path="member-table" element={<MemberTable />} />
+          <Route path="trainer-member-table" element={<TrainerMemberTable />} />
           <Route path="trainer-table" element={<TrainerTable />} />
           <Route path="accountant-table" element={<AcountantTable />} />
           <Route path="hr-table" element={<HRManagerTable />} />
           <Route path="lead-table" element={<LeadTable />} />
           <Route path="manager-table" element={<ManagerTable />} />
           <Route path="admin-table" element={<AdminTable />} />
+          <Route path="assign-trainer" element={<AssignTrainer />} />
           <Route path="active-admin" element={<ActiveAdminTable />} />
           <Route path="inactive-admin" element={<InActiveAdminTable />} />
           <Route path="receptionist-table" element={<RecepionistTable />} />
@@ -127,6 +133,8 @@ function App() {
             element={<NutritionIndividualPlansPage />}
           />
           <Route path="nutrition" element={<NutritionPlansPage />} />
+          <Route path="pay-for-user" element={<PayForUser />} />
+          <Route path="paymet-form" element={<PaymentForm />} />
           <Route path="equipment" element={<EquipmentPlansPage />} />
           <Route path="add-workoutplan" element={<WorkoutPlanForm />} />
           <Route path="add-equipment" element={<EquipmentForm />} />

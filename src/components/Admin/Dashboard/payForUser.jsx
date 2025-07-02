@@ -1,3 +1,4 @@
+import color from "../../shared/Color";
 import {
   Box,
   Typography,
@@ -19,14 +20,17 @@ import {
   DialogActions,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { deleteUser, getAllUser } from "../../../services/Service";
 import { toast } from "react-toastify";
+import PaymentIcon from "@mui/icons-material/Payment";
+import { getUserId, getUserRoll } from "../../../services/axiosClient";
 
-const NutritionPlan = () => {
+const PayForUser = () => {
   const navigate = useNavigate();
   const { role } = useParams();
 
@@ -60,6 +64,10 @@ const NutritionPlan = () => {
         console.log(err);
       });
   }, []);
+
+  const handleAddMember = () => {
+    navigate(`/${role}/dashboard/add-member`);
+  };
 
   const handleDelete = (id) => {
     deleteUser(id)
@@ -150,21 +158,23 @@ const NutritionPlan = () => {
       headerName: "Actions",
       minWidth: isMobile ? 100 : 140,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Tooltip title="View">
-            <IconButton
+        <Box sx={{ display: "flex", gap: 0.5, mt: "10px" }}>
+          <Tooltip title="Pay">
+            <Button
               size="small"
               color="info"
+              variant="outlined"
+              startIcon={<PaymentIcon />}
               onClick={() =>
-                navigate(`/${role}/dashboard/member-nutritionplan`, {
+                navigate(`/${role}/dashboard/paymet-form`, {
                   state: {
-                    id: params.row.id,
+                    userId: params.row.id,
                   },
                 })
               }
             >
-              <VisibilityIcon fontSize="small" />
-            </IconButton>
+              Pay
+            </Button>
           </Tooltip>
         </Box>
       ),
@@ -185,8 +195,22 @@ const NutritionPlan = () => {
         }}
       >
         <Typography variant="h5" fontWeight={600}>
-          WorkOut Plan Management
+          {getUserRoll() === "Trainer" ? (
+            <>My Member Management</>
+          ) : (
+            <>Member Management</>
+          )}
         </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddMember}
+          fullWidth={isMobile}
+          size={isMobile ? "small" : "medium"}
+          sx={{ backgroundColor: color.firstColor }}
+        >
+          Add Member
+        </Button>
       </Box>
 
       {/* Search and Filter */}
@@ -217,6 +241,7 @@ const NutritionPlan = () => {
           }}
           size="small"
         />
+
         <Box
           sx={{
             display: "flex",
@@ -370,4 +395,4 @@ const NutritionPlan = () => {
   );
 };
 
-export default NutritionPlan;
+export default PayForUser;

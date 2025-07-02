@@ -15,9 +15,9 @@ import {
   ChevronRight as ChevronRightIcon,
   Menu as MenuIcon,
   Phone as PhoneIcon,
-  CheckCircle as ActiveMemberIcon, // For Active Members
-  Cancel as InactiveMemberIcon, // For Inactive Members
-  EventAvailable as AttendanceIcon, // For Attendance
+  CheckCircle as ActiveMemberIcon,
+  Cancel as InactiveMemberIcon,
+  EventAvailable as AttendanceIcon,
   TableChart as TableChartIcon,
 } from "@mui/icons-material";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -114,9 +114,14 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
             to: "/admin/dashboard/payment",
           },
           {
-            text: "Payments For User",
+            text: "Add Payments For User",
             icon: <PaymentIcon />,
             to: "/admin/dashboard/all-payment-create-for-user",
+          },
+          {
+            text: "Pay For User",
+            icon: <PaymentIcon />,
+            to: "/admin/dashboard/pay-for-user",
           },
           {
             text: "Member",
@@ -162,6 +167,11 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
                 text: "Trainers",
                 icon: <RunIcon />,
                 to: `/${role}/dashboard/trainer-table`,
+              },
+              {
+                text: "Assign Trainers",
+                icon: <RunIcon />,
+                to: `/${role}/dashboard/assign-trainer`,
               },
             ],
           },
@@ -298,9 +308,10 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
                       to: `/${role}/dashboard/add-member`,
                     },
                     {
-                      text: "Members",
+                      text:
+                        getUserRoll() === "Trainer" ? "My Members" : "Members",
                       icon: <PeopleIcon />,
-                      to: `/${role}/dashboard/members`,
+                      to: `/${role}/dashboard/trainer-member-table`,
                     },
                   ],
                 },

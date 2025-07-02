@@ -34,7 +34,11 @@ import {
 import ReactCalendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useNavigate, useParams } from "react-router-dom";
-import { getUserName, getUserRoll } from "../../services/axiosClient";
+import {
+  getUserId,
+  getUserName,
+  getUserRoll,
+} from "../../services/axiosClient";
 import { toast } from "react-toastify";
 
 const AdminDashboard = () => {
@@ -55,6 +59,7 @@ const AdminDashboard = () => {
   });
   const [trainers, setTrainers] = useState([]);
   const [gymMembers, setGymMembers] = useState([]);
+  const [gymMembersbytrainer, setGymMembersByTrainer] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,12 +211,19 @@ const AdminDashboard = () => {
       pageSize: 50,
       order: [["createdAt", "ASC"]],
     };
+    const memberbyTrainerpayload = {
+      data: { filter: "", role: "Member", trainerId: getUserId() },
+      page: 0,
+      pageSize: 50,
+      order: [["createdAt", "ASC"]],
+    };
     Promise.all([
       getAllUser(memberPayload),
       getAllUser(leadPayload),
       getAllUser(trainerPayload),
+      getAllUser(memberbyTrainerpayload),
     ])
-      .then(([memberRes, leadRes, trainerRes]) => {
+      .then(([memberRes, leadRes, trainerRes, memberbytrainer]) => {
         // Process members
         const membersData = memberRes?.data?.data?.rows || [];
         setMembers(membersData);
@@ -229,6 +241,9 @@ const AdminDashboard = () => {
         const trainerData = trainerRes?.data?.data?.rows || [];
         console.log(trainerData);
         setTrainers(trainerData);
+
+        const memberDatabyTrainer = memberbytrainer?.data?.data?.rows || [];
+        setGymMembersByTrainer(memberDatabyTrainer);
 
         // Calculate monthly changes
         const currentMonth = new Date().getMonth();
@@ -1141,185 +1156,195 @@ const AdminDashboard = () => {
           </div>
         </div> */}
 
-        <div className="row gx-4">
-          <div className="col-sm-12">
-            <div className="card">
-              <div className="card-header">
-                <h5 className="card-title">Gym Members</h5>
-              </div>
-              <div className="card-body pt-0" style={{ paddingBottom: 0 }}>
-                {/* Scrollable table container */}
-                <div
-                  className="table-responsive"
-                  style={{
-                    maxHeight: "calc(100vh - 300px)", // Adjust height as needed
-                    overflowY: "auto",
-                    position: "relative",
-                  }}
-                >
-                  <table
-                    id="hideSearchExample"
-                    className="table m-0 align-middle"
-                  >
-                    <thead
+        {getUserRoll() === "Trainer" ? (
+          <>
+            <div className="row gx-4">
+              <div className="col-sm-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h5 className="card-title">Gym Members</h5>
+                  </div>
+                  <div className="card-body pt-0" style={{ paddingBottom: 0 }}>
+                    {/* Scrollable table container */}
+                    <div
+                      className="table-responsive"
                       style={{
-                        position: "sticky",
-                        top: 0,
-                        background: "white",
-                        zIndex: 1,
-                        boxShadow: "0 2px 2px -1px rgba(0, 0, 0, 0.1)",
+                        maxHeight: "calc(100vh - 300px)", // Adjust height as needed
+                        overflowY: "auto",
+                        position: "relative",
                       }}
                     >
-                      <tr>
-                        <th>#</th>
-                        <th>Member Name</th>
-                        <th>Email</th>
-                        <th>Joining Date</th>
-                        <th>Phone Number</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {gymMembers.map((member) => (
-                        <tr key={member.id}>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <div className="img-2x rounded-5 me-2 bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
-                                {member.id}
-                              </div>
-                            </div>
-                          </td>
-                          <td>{member.firstName + " " + member.lastName}</td>
-                          <td>{member.email}</td>
-                          <td>
-                            {new Date(member.joinDate).toLocaleDateString()}
-                          </td>
-                          <td>{member.phoneNumber}</td>
-                          <td>
-                            <span
-                              className={`badge bg-${
-                                member.status === "ACTIVE"
-                                  ? "success"
-                                  : "danger"
-                              }`}
-                            >
-                              {member.status}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="d-inline-flex gap-1">
+                      <table
+                        id="hideSearchExample"
+                        className="table m-0 align-middle"
+                      >
+                        <thead
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            background: "white",
+                            zIndex: 1,
+                            boxShadow: "0 2px 2px -1px rgba(0, 0, 0, 0.1)",
+                          }}
+                        >
+                          <tr>
+                            <th>#</th>
+                            <th>Member Name</th>
+                            <th>Email</th>
+                            <th>Joining Date</th>
+                            <th>Phone Number</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gymMembersbytrainer.map((member) => (
+                            <tr key={member.id}>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div className="img-2x rounded-5 me-2 bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
+                                    {member.id}
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                {member.firstName + " " + member.lastName}
+                              </td>
+                              <td>{member.email}</td>
+                              <td>
+                                {new Date(member.joinDate).toLocaleDateString()}
+                              </td>
+                              <td>{member.phoneNumber}</td>
+                              <td>
+                                <span
+                                  className={`badge bg-${
+                                    member.status === "ACTIVE"
+                                      ? "success"
+                                      : "danger"
+                                  }`}
+                                >
+                                  {member.status}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="d-inline-flex gap-1">
+                                  <button
+                                    type="button"
+                                    className="btn btn-hover btn-sm rounded-5"
+                                    onClick={() => handleView(member)}
+                                    title="View"
+                                  >
+                                    <ViewIcon fontSize="small" />
+                                  </button>
+
+                                  {getUserRoll() === "Admin" ||
+                                  getUserRoll() === "Receptionist" ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="btn btn-hover btn-sm rounded-5"
+                                        onClick={() => handleEdit(member.id)}
+                                        title="Edit"
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        className="btn btn-hover btn-sm rounded-5"
+                                        onClick={() => {
+                                          setMemberToDelete(member.id);
+                                          document
+                                            .getElementById("delRow")
+                                            .classList.add("show");
+                                          document.getElementById(
+                                            "delRow"
+                                          ).style.display = "block";
+                                        }}
+                                        title="Delete"
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Delete confirmation modal */}
+                    <div
+                      className="modal fade"
+                      id="delRow"
+                      tabIndex="-1"
+                      aria-labelledby="delRowLabel"
+                      aria-hidden="true"
+                      style={{ background: "rgba(0,0,0,0.5)" }}
+                    >
+                      <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                          <div className="modal-header">
+                            <h5 className="modal-title" id="delRowLabel">
+                              Confirm Deletion
+                            </h5>
+                            <button
+                              type="button"
+                              className="btn-close"
+                              onClick={() => {
+                                document
+                                  .getElementById("delRow")
+                                  .classList.remove("show");
+                                document.getElementById(
+                                  "delRow"
+                                ).style.display = "none";
+                              }}
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div className="modal-body">
+                            Are you sure you want to delete this member's
+                            details?
+                          </div>
+                          <div className="modal-footer">
+                            <div className="d-flex justify-content-end gap-2">
                               <button
                                 type="button"
-                                className="btn btn-hover btn-sm rounded-5"
-                                onClick={() => handleView(member)}
-                                title="View"
+                                className="btn btn-outline-secondary"
+                                onClick={() => {
+                                  document
+                                    .getElementById("delRow")
+                                    .classList.remove("show");
+                                  document.getElementById(
+                                    "delRow"
+                                  ).style.display = "none";
+                                }}
+                                aria-label="Close"
                               >
-                                <ViewIcon fontSize="small" />
+                                Cancel
                               </button>
-
-                              {getUserRoll() === "Admin" ||
-                              getUserRoll() === "Receptionist" ? (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="btn btn-hover btn-sm rounded-5"
-                                    onClick={() => handleEdit(member.id)}
-                                    title="Edit"
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    className="btn btn-hover btn-sm rounded-5"
-                                    onClick={() => {
-                                      setMemberToDelete(member.id);
-                                      document
-                                        .getElementById("delRow")
-                                        .classList.add("show");
-                                      document.getElementById(
-                                        "delRow"
-                                      ).style.display = "block";
-                                    }}
-                                    title="Delete"
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </button>
-                                </>
-                              ) : (
-                                <></>
-                              )}
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                                onClick={() => {
+                                  handleDelete(memberToDelete);
+                                  document
+                                    .getElementById("delRow")
+                                    .classList.remove("show");
+                                  document.getElementById(
+                                    "delRow"
+                                  ).style.display = "none";
+                                }}
+                                aria-label="Delete"
+                              >
+                                Delete
+                              </button>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Delete confirmation modal */}
-                <div
-                  className="modal fade"
-                  id="delRow"
-                  tabIndex="-1"
-                  aria-labelledby="delRowLabel"
-                  aria-hidden="true"
-                  style={{ background: "rgba(0,0,0,0.5)" }}
-                >
-                  <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                      <div className="modal-header">
-                        <h5 className="modal-title" id="delRowLabel">
-                          Confirm Deletion
-                        </h5>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          onClick={() => {
-                            document
-                              .getElementById("delRow")
-                              .classList.remove("show");
-                            document.getElementById("delRow").style.display =
-                              "none";
-                          }}
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                      <div className="modal-body">
-                        Are you sure you want to delete this member's details?
-                      </div>
-                      <div className="modal-footer">
-                        <div className="d-flex justify-content-end gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-outline-secondary"
-                            onClick={() => {
-                              document
-                                .getElementById("delRow")
-                                .classList.remove("show");
-                              document.getElementById("delRow").style.display =
-                                "none";
-                            }}
-                            aria-label="Close"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            onClick={() => {
-                              handleDelete(memberToDelete);
-                              document
-                                .getElementById("delRow")
-                                .classList.remove("show");
-                              document.getElementById("delRow").style.display =
-                                "none";
-                            }}
-                            aria-label="Delete"
-                          >
-                            Delete
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1327,8 +1352,205 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="row gx-4">
+              <div className="col-sm-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h5 className="card-title">Gym Members</h5>
+                  </div>
+                  <div className="card-body pt-0" style={{ paddingBottom: 0 }}>
+                    {/* Scrollable table container */}
+                    <div
+                      className="table-responsive"
+                      style={{
+                        maxHeight: "calc(100vh - 300px)", // Adjust height as needed
+                        overflowY: "auto",
+                        position: "relative",
+                      }}
+                    >
+                      <table
+                        id="hideSearchExample"
+                        className="table m-0 align-middle"
+                      >
+                        <thead
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            background: "white",
+                            zIndex: 1,
+                            boxShadow: "0 2px 2px -1px rgba(0, 0, 0, 0.1)",
+                          }}
+                        >
+                          <tr>
+                            <th>#</th>
+                            <th>Member Name</th>
+                            <th>Email</th>
+                            <th>Joining Date</th>
+                            <th>Phone Number</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gymMembers.map((member) => (
+                            <tr key={member.id}>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <div className="img-2x rounded-5 me-2 bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
+                                    {member.id}
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                {member.firstName + " " + member.lastName}
+                              </td>
+                              <td>{member.email}</td>
+                              <td>
+                                {new Date(member.joinDate).toLocaleDateString()}
+                              </td>
+                              <td>{member.phoneNumber}</td>
+                              <td>
+                                <span
+                                  className={`badge bg-${
+                                    member.status === "ACTIVE"
+                                      ? "success"
+                                      : "danger"
+                                  }`}
+                                >
+                                  {member.status}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="d-inline-flex gap-1">
+                                  <button
+                                    type="button"
+                                    className="btn btn-hover btn-sm rounded-5"
+                                    onClick={() => handleView(member)}
+                                    title="View"
+                                  >
+                                    <ViewIcon fontSize="small" />
+                                  </button>
+
+                                  {getUserRoll() === "Admin" ||
+                                  getUserRoll() === "Receptionist" ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="btn btn-hover btn-sm rounded-5"
+                                        onClick={() => handleEdit(member.id)}
+                                        title="Edit"
+                                      >
+                                        <EditIcon fontSize="small" />
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        className="btn btn-hover btn-sm rounded-5"
+                                        onClick={() => {
+                                          setMemberToDelete(member.id);
+                                          document
+                                            .getElementById("delRow")
+                                            .classList.add("show");
+                                          document.getElementById(
+                                            "delRow"
+                                          ).style.display = "block";
+                                        }}
+                                        title="Delete"
+                                      >
+                                        <DeleteIcon fontSize="small" />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Delete confirmation modal */}
+                    <div
+                      className="modal fade"
+                      id="delRow"
+                      tabIndex="-1"
+                      aria-labelledby="delRowLabel"
+                      aria-hidden="true"
+                      style={{ background: "rgba(0,0,0,0.5)" }}
+                    >
+                      <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                          <div className="modal-header">
+                            <h5 className="modal-title" id="delRowLabel">
+                              Confirm Deletion
+                            </h5>
+                            <button
+                              type="button"
+                              className="btn-close"
+                              onClick={() => {
+                                document
+                                  .getElementById("delRow")
+                                  .classList.remove("show");
+                                document.getElementById(
+                                  "delRow"
+                                ).style.display = "none";
+                              }}
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div className="modal-body">
+                            Are you sure you want to delete this member's
+                            details?
+                          </div>
+                          <div className="modal-footer">
+                            <div className="d-flex justify-content-end gap-2">
+                              <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={() => {
+                                  document
+                                    .getElementById("delRow")
+                                    .classList.remove("show");
+                                  document.getElementById(
+                                    "delRow"
+                                  ).style.display = "none";
+                                }}
+                                aria-label="Close"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                                onClick={() => {
+                                  handleDelete(memberToDelete);
+                                  document
+                                    .getElementById("delRow")
+                                    .classList.remove("show");
+                                  document.getElementById(
+                                    "delRow"
+                                  ).style.display = "none";
+                                }}
+                                aria-label="Delete"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getUserRoll } from "../../services/axiosClient";
+import { getUserRoll, getUserId } from "../../services/axiosClient";
 import {
   getAllNutritionsPlans,
   deleteNutritionPlan,
+  updateNutritionPlan,
 } from "../../services/Service";
-import { getUserId } from "../../services/axiosClient";
 
 const NutritionIndividualPlansPage = () => {
   const location = useLocation();
@@ -14,6 +14,7 @@ const NutritionIndividualPlansPage = () => {
   const [plans, setPlans] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [loadingIds, setLoadingIds] = useState(new Set());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +58,31 @@ const NutritionIndividualPlansPage = () => {
     }
   };
 
+  const handleComplete = async (plan) => {
+    const today = new Date().toISOString().split("T")[0];
+    setLoadingIds((prev) => new Set(prev).add(plan.id));
+    try {
+      await updateNutritionPlan(plan.id, {
+        toDate: today,
+        isCompleted: true,
+      });
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === plan.id ? { ...p, toDate: today, isCompleted: true } : p
+        )
+      );
+    } catch (error) {
+      console.error("Error updating nutrition plan:", error);
+      alert("Failed to mark as completed.");
+    } finally {
+      setLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(plan.id);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-8xl mx-auto">
@@ -80,61 +106,84 @@ const NutritionIndividualPlansPage = () => {
           <table className="w-full text-left table-auto">
             <thead className="bg-blue-600 text-white">
               <tr>
-                <th className="px-4 py-3 w-12">#</th>
-                <th className="px-4 py-3 w-40">Name</th>
-                <th className="px-4 py-3 w-32">Goal</th>
-                <th className="px-4 py-3 w-32">Duration</th>
-                <th className="px-4 py-3 w-24">Meals/Day</th>
-                <th className="px-4 py-3 w-32">From Date</th>
-                <th className="px-4 py-3 w-32">To Date</th>
-                <th className="px-4 py-3 w-32">Eating</th>
-                <th className="px-4 py-3 w-32">Protein</th>
-                <th className="px-4 py-3 w-40">Which Protein</th>
+                <th className="px-4 py-3">#</th>
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Goal</th>
+                <th className="px-4 py-3">Duration</th>
+                <th className="px-4 py-3">Meals/Day</th>
+                <th className="px-4 py-3">From Date</th>
+                <th className="px-4 py-3">To Date</th>
+                <th className="px-4 py-3">Eating</th>
+                <th className="px-4 py-3">Protein</th>
+                <th className="px-4 py-3">Which Protein</th>
                 {(getUserRoll() === "Admin" || getUserRoll() === "Trainer") && (
-                  <th className="px-4 py-3 w-32">Actions</th>
+                  <th className="px-4 py-3">Actions</th>
                 )}
               </tr>
             </thead>
             <tbody>
               {plans.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-6 text-gray-500">
+                  <td colSpan="11" className="text-center py-6 text-gray-500">
                     No nutrition plans found.
                   </td>
                 </tr>
               ) : (
-                plans.map((plan, index) => (
-                  <tr key={plan.id} className="border-b hover:bg-gray-100">
-                    <td className="px-4 py-2 w-12">{index + 1}</td>
-                    <td className="px-4 py-2 w-40">{plan.name}</td>
-                    <td className="px-4 py-2 w-32">{plan.goal}</td>
-                    <td className="px-4 py-2 w-32">{plan.duration}</td>
-                    <td className="px-4 py-2 w-24">{plan.mealsPerDay}</td>
-                    <td className="px-4 py-2 w-32">{plan.fromDate}</td>
-                    <td className="px-4 py-2 w-32">{plan.toDate}</td>
-                    <td className="px-4 py-2 w-32">{plan.eating}</td>
-                    <td className="px-4 py-2 w-32">{plan.protein}</td>
-                    <td className="px-4 py-2 w-40">{plan.whichProtein}</td>
+                plans.map((plan, index) => {
+                  const isCompleted = plan.toDate && plan.toDate.trim() !== "";
+                  const isLoading = loadingIds.has(plan.id);
 
-                    {(getUserRoll() === "Admin" ||
-                      getUserRoll() === "Trainer") && (
-                      <td className="px-4 py-2 flex  w-32 space-x-2">
-                        <button
-                          onClick={() => handleEdit(plan.id)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(plan.id)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    )}
-                  </tr>
-                ))
+                  return (
+                    <tr key={plan.id} className="border-b hover:bg-gray-100">
+                      <td className="px-4 py-2">{index + 1}</td>
+                      <td className="px-4 py-2">{plan.name}</td>
+                      <td className="px-4 py-2">{plan.goal}</td>
+                      <td className="px-4 py-2">{plan.duration}</td>
+                      <td className="px-4 py-2">{plan.mealsPerDay}</td>
+                      <td className="px-4 py-2">{plan.fromDate || "-"}</td>
+                      <td className="px-4 py-2">{plan.toDate || "-"}</td>
+                      <td className="px-4 py-2">{plan.eating}</td>
+                      <td className="px-4 py-2">{plan.protein}</td>
+                      <td className="px-4 py-2">{plan.whichProtein}</td>
+                      {(getUserRoll() === "Admin" ||
+                        getUserRoll() === "Trainer") && (
+                        <td className="px-4 py-2 flex flex-col space-y-2">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEdit(plan.id)}
+                              className="text-blue-600 hover:underline"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(plan.id)}
+                              className="text-red-600 hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                          {isCompleted ? (
+                            <span className="text-green-600 font-semibold">
+                              Completed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleComplete(plan)}
+                              disabled={isLoading}
+                              className={`px-3 py-1 rounded ${
+                                isLoading
+                                  ? "bg-gray-400 text-white"
+                                  : "bg-green-500 text-white hover:bg-green-600"
+                              }`}
+                            >
+                              {isLoading ? "Completing..." : "Complete"}
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

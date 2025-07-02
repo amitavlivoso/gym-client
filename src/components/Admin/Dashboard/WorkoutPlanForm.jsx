@@ -82,7 +82,7 @@ const WorkoutPlanForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen  flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-xl bg-white p-8 rounded-2xl shadow-xl border">
         <h2 className="text-2xl font-bold text-indigo-700 mb-6 text-center">
           {id ? "Edit Workout Plan" : "Create Workout Plan"}

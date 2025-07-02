@@ -24,11 +24,12 @@ const Dashboard = () => {
       case "HR":
       case "Accountant":
       case "Trainer":
+      case "Receptionist":
         return <AdminDashboard />;
       case "Member":
         return <UserDashboard />;
       case "SuperAdmin":
-        return <SuperAdminDashboard/>
+        return <SuperAdminDashboard />;
       default:
         return <Typography>Loading or no dashboard available.</Typography>;
     }

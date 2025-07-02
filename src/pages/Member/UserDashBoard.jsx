@@ -39,8 +39,6 @@ export default function UserDashboard() {
     severity: "success",
   });
 
-  
-
   const fetchDashboardData = () => {
     const userId = getUserId();
     const payload = {
@@ -86,7 +84,7 @@ export default function UserDashboard() {
   useEffect(() => {
     getPayment(getUserId())
       .then((res) => {
-        console.log(res)
+        console.log(res);
         setMembershipInfo(res?.data?.data);
       })
       .catch((err) => {
@@ -155,43 +153,46 @@ export default function UserDashboard() {
     return "Evening (6-9 PM)";
   };
 
-const calculateCurrentStreak = (sessions) => {
-  if (!sessions || sessions.length === 0) return 0;
-  
-  // Get unique dates in YYYY-MM-DD format and sort them newest first
-  const uniqueDates = [...new Set(
-    sessions.map(s => new Date(s.checkInTime || s.createdAt).toISOString().split('T')[0])
-  )].sort((a, b) => new Date(b) - new Date(a));
+  const calculateCurrentStreak = (sessions) => {
+    if (!sessions || sessions.length === 0) return 0;
 
-  let streak = 0;
-  let currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0); // Normalize to midnight
-  
-  // If most recent session was today, start counting
-  if (uniqueDates[0] === currentDate.toISOString().split('T')[0]) {
-    streak = 1;
-    currentDate.setDate(currentDate.getDate() - 1); // Move to yesterday
-  } else {
-    return 0; // No session today means no current streak
-  }
+    // Get unique dates in YYYY-MM-DD format and sort them newest first
+    const uniqueDates = [
+      ...new Set(
+        sessions.map(
+          (s) =>
+            new Date(s.checkInTime || s.createdAt).toISOString().split("T")[0]
+        )
+      ),
+    ].sort((a, b) => new Date(b) - new Date(a));
 
-  // Check consecutive days
-  for (let i = 1; i < uniqueDates.length; i++) {
-    const prevDate = new Date(uniqueDates[i]);
-    prevDate.setHours(0, 0, 0, 0);
-    
-    if (prevDate.getTime() === currentDate.getTime()) {
-      streak++;
-      currentDate.setDate(currentDate.getDate() - 1);
+    let streak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Normalize to midnight
+
+    // If most recent session was today, start counting
+    if (uniqueDates[0] === currentDate.toISOString().split("T")[0]) {
+      streak = 1;
+      currentDate.setDate(currentDate.getDate() - 1); // Move to yesterday
     } else {
-      break; // Streak broken
+      return 0; // No session today means no current streak
     }
-  }
-  
-  return streak;
-};
-  
 
+    // Check consecutive days
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prevDate = new Date(uniqueDates[i]);
+      prevDate.setHours(0, 0, 0, 0);
+
+      if (prevDate.getTime() === currentDate.getTime()) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break; // Streak broken
+      }
+    }
+
+    return streak;
+  };
 
   const calculateCaloriesBurned = (totalMinutes) => {
     // Simple estimation: 10 calories per minute
@@ -228,6 +229,7 @@ const calculateCurrentStreak = (sessions) => {
 
     addCheckIn(newSession)
       .then((res) => {
+        console.log(res);
         const createdSession = res.data;
         // Replace temporary session with real one from backend
         setRecentSessions((prev) => [
