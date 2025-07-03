@@ -155,3 +155,29 @@ export function updateNutritionPlan(id, payLoad) {
 export function deleteNutritionPlan(id) {
   return client.delete(`/Nurition/delete-record/${id}`);
 }
+
+export function getAllEquipments(payLoad) {
+  return client.post("/Equipment/search-record", payLoad);
+}
+
+export function createEquipments(payLoad) {
+  return client.post("/Equipment/create", payLoad);
+}
+
+export function getEquipmentsById(id) {
+  return client.get(`/Equipment/get-one-record/${id}`);
+}
+export function updateEquipments(id, payLoad) {
+  return client.patch(`/Equipment/update-record/${id}`, payLoad);
+}
+export function deleteEquipments(id) {
+  return client.delete(`/Equipment/delete-record/${id}`);
+}
+
+export function forgotPassword(payLoad) {
+  return client.patch("/auth/forgot-password", payLoad);
+}
+
+export function resetPassword(payLoad) {
+  return client.patch("/auth/reset-password", payLoad);
+}

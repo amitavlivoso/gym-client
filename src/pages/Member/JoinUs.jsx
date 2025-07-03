@@ -1,30 +1,17 @@
 import React from "react";
-import {
-  Box,
-  TextField,
-  MenuItem,
-  Button,
-  Paper,
-  Typography,
-  Avatar,
-  InputAdornment,
-} from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import {
-  Person,
-  Email,
-  Phone,
-  Wc,
-  LocationOn,
-  Event,
-  Lock,
-} from "@mui/icons-material";
-import { Register } from "../../services/Service";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import color from "../../components/shared/Color";
-import { getUserId } from "../../services/axiosClient";
+import { Register } from "../../services/Service";
+
+// Material UI icons
+import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import EventIcon from "@mui/icons-material/Event";
+import LockIcon from "@mui/icons-material/Lock";
 
 const genderOptions = ["Male", "Female", "Other"];
 
@@ -58,11 +45,11 @@ const JoinUsForm = () => {
     role: "Member",
     joinDate: new Date().toISOString().split("T")[0],
   };
+
   const navigate = useNavigate();
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const { confirmPassword, ...submitValues } = values;
-    // console.log(submitValues);
     try {
       const res = await Register(submitValues);
 
@@ -80,16 +67,11 @@ const JoinUsForm = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", m: 10, px: 2 }}>
-      <Paper elevation={4} sx={{ maxWidth: 600, width: "100%", p: 4 }}>
-        <Box sx={{ textAlign: "center", mb: 3 }}>
-          <Avatar sx={{ bgcolor: color.firstColor, mx: "auto", mb: 1 }}>
-            <Person />
-          </Avatar>
-          <Typography variant="h5" fontWeight={600}>
-            Join Our Gym
-          </Typography>
-        </Box>
+    <div className="flex justify-center px-4 py-12 sm:py-20 bg-gray-50">
+      <div className="w-full max-w-xl bg-white shadow-xl rounded-lg p-6 sm:p-10">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Join Our Gym
+        </h2>
 
         <Formik
           initialValues={initialValues}
@@ -104,204 +86,218 @@ const JoinUsForm = () => {
             handleBlur,
             isSubmitting,
           }) => (
-            <Form>
-              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  name="firstName"
-                  value={values.firstName}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.firstName && Boolean(errors.firstName)}
-                  helperText={touched.firstName && errors.firstName}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+            <Form className="space-y-4">
+              {/* First and Last Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
+                  <div className="relative">
+                    <PersonIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={values.firstName}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                    />
+                  </div>
+                  {touched.firstName && errors.firstName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
 
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  name="lastName"
-                  value={values.lastName}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-              </Box>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={values.lastName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                  {touched.lastName && errors.lastName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                sx={{ mb: 2 }}
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.email && Boolean(errors.email)}
-                helperText={touched.email && errors.email}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <div className="relative">
+                  <EmailIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                </div>
+                {touched.email && errors.email && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                )}
+              </div>
 
-              <TextField
-                fullWidth
-                label="Phone Number"
-                name="phoneNumber"
-                sx={{ mb: 2 }}
-                value={values.phoneNumber}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                helperText={touched.phoneNumber && errors.phoneNumber}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Phone />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {/* Phone Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <PhoneIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={values.phoneNumber}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                </div>
+                {touched.phoneNumber && errors.phoneNumber && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.phoneNumber}
+                  </p>
+                )}
+              </div>
 
-              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <TextField
-                  select
-                  label="Gender"
-                  name="gender"
-                  fullWidth
-                  value={values.gender}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.gender && Boolean(errors.gender)}
-                  helperText={touched.gender && errors.gender}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Wc />
-                      </InputAdornment>
-                    ),
-                  }}
-                >
-                  {genderOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              {/* Gender and DOB */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender
+                  </label>
+                  <select
+                    name="gender"
+                    value={values.gender}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  >
+                    <option value="">Select</option>
+                    {genderOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {touched.gender && errors.gender && (
+                    <p className="text-xs text-red-500 mt-1">{errors.gender}</p>
+                  )}
+                </div>
 
-                <TextField
-                  label="Date of Birth"
-                  name="dob"
-                  type="date"
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  value={values.dob}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={touched.dob && Boolean(errors.dob)}
-                  helperText={touched.dob && errors.dob}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Event />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date of Birth
+                  </label>
+                  <div className="relative">
+                    <EventIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="date"
+                      name="dob"
+                      value={values.dob}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                    />
+                  </div>
+                  {touched.dob && errors.dob && (
+                    <p className="text-xs text-red-500 mt-1">{errors.dob}</p>
+                  )}
+                </div>
+              </div>
 
-              <TextField
-                fullWidth
-                label="Address"
-                name="address"
-                multiline
-                rows={2}
-                sx={{ mb: 2 }}
-                value={values.address}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.address && Boolean(errors.address)}
-                helperText={touched.address && errors.address}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationOn />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {/* Address */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
+                <div className="relative">
+                  <LocationOnIcon className="w-5 h-5 text-gray-400 absolute left-3 top-3" />
+                  <textarea
+                    name="address"
+                    rows={3}
+                    value={values.address}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-24 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                </div>
+                {touched.address && errors.address && (
+                  <p className="text-xs text-red-500 mt-1">{errors.address}</p>
+                )}
+              </div>
 
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type="password"
-                sx={{ mb: 2 }}
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.password && Boolean(errors.password)}
-                helperText={touched.password && errors.password}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <LockIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                </div>
+                {touched.password && errors.password && (
+                  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+                )}
+              </div>
 
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                sx={{ mb: 3 }}
-                value={values.confirmPassword}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={
-                  touched.confirmPassword && Boolean(errors.confirmPassword)
-                }
-                helperText={touched.confirmPassword && errors.confirmPassword}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <LockIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="h-12 text-base pl-10 w-full rounded-md border border-gray-300 focus:ring-[#ff6f59] focus:border-[#ff6f59]"
+                  />
+                </div>
+                {touched.confirmPassword && errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
                 disabled={isSubmitting}
-                sx={{
-                  backgroundColor: color.firstColor,
-                }}
+                className="mt-4 w-full py-3 px-4 rounded-md bg-[#ff6f59] text-white font-medium hover:bg-[#ff543e] transition"
               >
                 Join Now
-              </Button>
+              </button>
             </Form>
           )}
         </Formik>
-      </Paper>
-    </Box>
+      </div>
+    </div>
   );
 };
 

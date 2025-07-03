@@ -30,7 +30,7 @@ const AdminLayout = () => {
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { xs: "100%", sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
         }}
       >

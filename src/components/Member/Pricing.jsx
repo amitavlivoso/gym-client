@@ -76,8 +76,8 @@ const PricingSection = () => {
                   <span className="ml-2 mb-1">/{plan.period} Month</span>
                 </div>
                 <p className="mb-6">{plan.description}</p>
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((feature, i) => (
+                {/* <ul className="mb-8 space-y-3">
+                  {(Array.isArray(plan.features) ?? []).map((feature, i) => (
                     <li key={i} className="flex items-start">
                       <svg
                         className="h-6 w-6 mr-2 flex-shrink-0 stroke-current"
@@ -94,7 +94,7 @@ const PricingSection = () => {
                       <span>{feature}</span>
                     </li>
                   ))}
-                </ul>
+                </ul> */}
                 <button
                   onClick={() => navigate("/join")}
                   className={`w-full py-3 px-6 rounded-lg font-bold transition-all duration-300

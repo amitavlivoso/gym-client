@@ -2,9 +2,9 @@
 import whychooseus from "../../assets/image/whychooseus.jpg";
 export default function WhyChooseUs() {
   return (
-    <div className="mx-auto h-[707px] max-w-full text-center mt-16 mb-8  grid grid-cols-1 md:grid-cols-2 gap-0  ">
+    <div className="mx-auto md:h-[707px] max-w-full text-center mt-16 mb-8  grid grid-cols-1 md:grid-cols-2 gap-0  ">
       <div
-        className=" "
+        className="h-96 md:h-[707px]"
         style={{
           backgroundImage: `url(${whychooseus})`,
           backgroundSize: "cover",
@@ -23,7 +23,7 @@ export default function WhyChooseUs() {
           possimus nam totam, repellat expedita ullam amet velit.
         </p>
 
-        <div className="flex flex-row gap-12 mt-6">
+        <div className="flex flex-col md:flex-row  gap-12 mt-6">
           <div className="flex flex-col items-center">
             <span className="text-5xl font-bold">500+</span>
 

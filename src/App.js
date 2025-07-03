@@ -4,7 +4,7 @@ import Layout from "./components/shared/Layout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import UserDashboard from "./pages/Member/UserDashBoard";
-import AdminDashboard from "./pages/Admin/AdminDashBoard";
+import { useEffect } from "react";
 import RoleLayout from "./components/shared/RoleLayout";
 import { ToastContainer } from "react-toastify";
 import AddMember from "./pages/Admin/Member/AddMember";
@@ -49,8 +49,33 @@ import AssignTrainer from "./components/Admin/Dashboard/AssignTrainer";
 import TrainerMemberTable from "./components/Trainer/MemberTable";
 import PayForUser from "./components/Admin/Dashboard/payForUser";
 import PaymentForm from "./components/Admin/Dashboard/PaymentForm";
+import ForgotPassword from "./pages/Member/ForgotPassword";
+import ResetPassword from "./pages/Member/ResetPassword";
 
 function App() {
+  // useEffect(() => {
+  //   // Disable right-click
+  //   const handleContextMenu = (e) => e.preventDefault();
+  //   document.addEventListener("contextmenu", handleContextMenu);
+
+  //   // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+  //   const handleKeyDown = (e) => {
+  //     if (
+  //       e.key === "F12" ||
+  //       (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+  //       (e.ctrlKey && e.key === "U")
+  //     ) {
+  //       e.preventDefault();
+  //     }
+  //   };
+  //   document.addEventListener("keydown", handleKeyDown);
+
+  //   return () => {
+  //     document.removeEventListener("contextmenu", handleContextMenu);
+  //     document.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, []);
+
   return (
     <Router>
       <Routes>
@@ -64,6 +89,8 @@ function App() {
           <Route path="paymentpage" element={<PaymentCardPage />} />
           <Route path="about" element={<AboutUs />} />
           <Route path="contact" element={<ContactUs />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
         </Route>
 
         <Route path="/:role/dashboard" element={<RoleLayout />}>

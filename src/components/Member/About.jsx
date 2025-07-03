@@ -1,4 +1,3 @@
-import React from "react";
 import aboutimg from "../../assets/image/about1.jpg";
 
 const About = () => {
@@ -9,7 +8,7 @@ const About = () => {
           About Us
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-18 rounded-4xl">
+        <div className="grid grid-cols-1 px-4 md:grid-cols-2 gap-4 mt-18 rounded-4xl">
           <a href="">
             <img
               src={aboutimg}

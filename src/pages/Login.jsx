@@ -93,11 +93,11 @@ const Login = () => {
   });
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-white m-20">
-      <div className="flex flex-col md:flex-row w-full max-w-6xl shadow-lg rounded-2xl overflow-hidden">
-        {/* Left Side */}
-        <div className="md:w-1/2 bg-white p-10 relative flex flex-col justify-center">
-          <h2 className="text-4xl font-extrabold text-[#566fe2] mb-8">
+    <section className="min-h-screen flex items-center justify-center bg-white px-4 py-10">
+      <div className="flex flex-col lg:flex-row w-full max-w-5xl shadow-lg rounded-2xl overflow-hidden">
+        {/* Left Side: Form */}
+        <div className="flex-1 bg-white p-8 sm:p-10 flex flex-col justify-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#566fe2] mb-6 sm:mb-8 text-center sm:text-left">
             Sign-in
           </h2>
           <form onSubmit={formik.handleSubmit} className="space-y-6">
@@ -148,13 +148,13 @@ const Login = () => {
               )}
             </div>
 
-            <div className="flex justify-between items-center">
-              <label className="flex items-center text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row justify-between  text-sm">
+              <label className="flex items-center mb-2 sm:mb-0 text-gray-600">
                 <input type="checkbox" className="mr-2" /> Remember me
               </label>
               <Link
-                to="/Forgot-Password"
-                className="text-sm text-[#566fe2] hover:underline"
+                to="/forgot-password"
+                className="text-[#566fe2] hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -170,12 +170,12 @@ const Login = () => {
           </form>
         </div>
 
-        {/* Right Side */}
-        <div className="md:w-1/2">
+        {/* Right Side: Image */}
+        <div className="hidden lg:flex flex-1">
           <img
             src={login}
             alt="Gym"
-            className="w-full h-full object-cover rounded-r-2xl p-8"
+            className="w-full h-full object-cover rounded-r-2xl"
           />
         </div>
       </div>

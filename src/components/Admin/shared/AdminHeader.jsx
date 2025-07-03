@@ -31,7 +31,7 @@ import {
   getUser,
 } from "../../../services/Service";
 
-const AdminHeader = () => {
+const AdminHeader = ({ handleDrawerToggle }) => {
   const [members, setMembers] = useState([]);
 
   const [leads, setLeads] = useState([]);
@@ -241,6 +241,14 @@ const AdminHeader = () => {
         {/* Brand container sm starts */}
         <div className="brand-container-sm d-xl-none d-flex align-items-center">
           {/* App brand starts */}
+          {/* Toggle sidebar starts */}
+          <button
+            type="button"
+            className="toggle-sidebar mr-10"
+            onClick={handleDrawerToggle}
+          >
+            <MenuIcon />
+          </button>
           <div className="app-brand">
             <a href="index.html">
               <img
@@ -252,10 +260,6 @@ const AdminHeader = () => {
           </div>
           {/* App brand ends */}
 
-          {/* Toggle sidebar starts */}
-          <button type="button" className="toggle-sidebar">
-            <MenuIcon />
-          </button>
           {/* Toggle sidebar ends */}
         </div>
         {/* Brand container sm ends */}

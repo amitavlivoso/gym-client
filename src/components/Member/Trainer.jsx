@@ -1,7 +1,7 @@
 import React from "react";
-import Trainer1 from '../../assets/image/teacher1.jpg'
-import Trainer2 from '../../assets/image/teacher2.jpg'
-import Trainer3 from '../../assets/image/teacher3.jpg'
+import Trainer1 from "../../assets/image/teacher1.jpg";
+import Trainer2 from "../../assets/image/teacher2.jpg";
+import Trainer3 from "../../assets/image/teacher3.jpg";
 
 const Trainer = () => {
   return (
@@ -11,7 +11,7 @@ const Trainer = () => {
           Meet our teachers
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-18 mb-16">
+        <div className="grid px-4 grid-cols-1 md:grid-cols-3 gap-4 mt-18 mb-16">
           <a href="">
             <img
               src={Trainer1}

@@ -25,8 +25,9 @@ import { getUserName, getUserRoll } from "../../../services/axiosClient";
 import "../../assets/css/main.min.css";
 import logo from "../../assets/images/livosologo.png";
 import "./adminsidebar.css";
+import { Box, IconButton, Divider, Drawer } from "@mui/material";
 
-const AdminSidebar = ({ handleDrawerToggle }) => {
+const AdminSidebar = ({ handleDrawerToggle, mobileOpen, drawerWidth }) => {
   const { role } = useParams();
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState({});
@@ -319,130 +320,295 @@ const AdminSidebar = ({ handleDrawerToggle }) => {
             : []),
         ];
 
-  return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
-      <nav
-        id="sidebar"
-        className="sidebar-wrapper"
-        style={{ height: "100%", display: "flex", flexDirection: "column" }}
+  const drawerContent = (
+    <Box
+      sx={{
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        className="brand-container d-flex align-items-center justify-content-between"
+        style={{ padding: "0 16px" }}
       >
-        <div className="brand-container d-flex align-items-center justify-content-between">
-          <div className="app-brand ms-3">
-            <Link to="/">
-              <img src={logo} className="logo" alt="Gym Management System" />
-            </Link>
-          </div>
-
-          <button
-            type="button"
-            className="pin-sidebar me-3"
-            onClick={handleDrawerToggle}
-            aria-label="Toggle sidebar"
-          >
-            <MenuIcon />
-          </button>
+        <div className="app-brand">
+          <Link to="/">
+            <img src={logo} className="logo" alt="Gym Management System" />
+          </Link>
         </div>
-
-        <div className="sidebar-profile">
-          <div
-            className="initials-avatar rounded-circle border border-primary border-3 d-flex align-items-center justify-content-center"
-            style={{
-              width: "80px",
-              height: "80px",
-              backgroundColor: "#0d6efd",
-              color: "white",
-              fontSize: "24px",
-              fontWeight: "bold",
-            }}
-          >
-            {getInitials()}
-          </div>
-          <h6 className="mb-1 profile-name text-nowrap text-truncate text-primary">
-            {getUserName()}
-          </h6>
-          <small className="profile-name text-nowrap text-truncate">
-            {getUserRoll()}
-          </small>
-        </div>
-
-        <div
-          className="sidebarMenuScroll"
-          style={{ flex: 1, overflowY: "auto" }}
+        <IconButton
+          onClick={handleDrawerToggle}
+          aria-label="Toggle sidebar"
+          sx={{ display: { sm: "none" } }}
         >
-          <ul className="sidebar-menu">
-            {navItems.map((item, index) => (
-              <li
-                key={index}
-                className={`${isActive(item.to) ? "active current-page" : ""} ${
-                  item.subItems ? "treeview" : ""
-                } ${
-                  item.subItems && expandedItems[item.text] ? "expanded" : ""
-                }`}
-              >
-                {item.subItems ? (
-                  <>
-                    <div
-                      className="menu-item-wrapper"
-                      onClick={() => toggleExpand(item.text)}
-                    >
-                      <span className="menu-item-content">
-                        {item.icon &&
-                          React.cloneElement(item.icon, { className: "me-2" })}
-                        <span className="menu-text">{item.text}</span>
-                        <ChevronRightIcon
-                          className={`treeview-indicator ${
-                            expandedItems[item.text] ? "rotated" : ""
-                          }`}
-                        />
-                      </span>
-                    </div>
-                    <ul
-                      className="treeview-menu"
-                      style={{
-                        display: expandedItems[item.text] ? "block" : "none",
-                      }}
-                    >
-                      {item.subItems.map((subItem, subIndex) => (
-                        <li key={subIndex}>
-                          <Link
-                            to={subItem.to}
-                            className={isActive(subItem.to) ? "active" : ""}
-                          >
-                            {subItem.icon &&
-                              React.cloneElement(subItem.icon, {
-                                className: "me-2",
-                              })}
-                            <span className="menu-text">{subItem.text}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : (
-                  <Link to={item.to} className="menu-item-wrapper">
+          <MenuIcon />
+        </IconButton>
+      </div>
+
+      <Divider />
+
+      <div className="sidebar-profile" style={{ padding: 16 }}>
+        <div
+          className="initials-avatar rounded-circle border border-primary border-3 d-flex align-items-center justify-content-center"
+          style={{
+            width: "80px",
+            height: "80px",
+            backgroundColor: "#0d6efd",
+            color: "white",
+            fontSize: "24px",
+            fontWeight: "bold",
+          }}
+        >
+          {getInitials()}
+        </div>
+        <h6 className="mb-1 profile-name text-nowrap text-truncate text-primary">
+          {getUserName()}
+        </h6>
+        <small className="profile-name text-nowrap text-truncate">
+          {getUserRoll()}
+        </small>
+      </div>
+
+      <Divider />
+
+      <div className="sidebarMenuScroll" style={{ flex: 1, overflowY: "auto" }}>
+        <ul className="sidebar-menu">
+          {navItems.map((item, index) => (
+            <li
+              key={index}
+              className={`${isActive(item.to) ? "active current-page" : ""} ${
+                item.subItems ? "treeview" : ""
+              } ${item.subItems && expandedItems[item.text] ? "expanded" : ""}`}
+            >
+              {item.subItems ? (
+                <>
+                  <div
+                    className="menu-item-wrapper"
+                    onClick={() => toggleExpand(item.text)}
+                  >
                     <span className="menu-item-content">
                       {item.icon &&
                         React.cloneElement(item.icon, { className: "me-2" })}
                       <span className="menu-text">{item.text}</span>
+                      <ChevronRightIcon
+                        className={`treeview-indicator ${
+                          expandedItems[item.text] ? "rotated" : ""
+                        }`}
+                      />
                     </span>
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+                  </div>
+                  <ul
+                    className="treeview-menu"
+                    style={{
+                      display: expandedItems[item.text] ? "block" : "none",
+                    }}
+                  >
+                    {item.subItems.map((subItem, subIndex) => (
+                      <li key={subIndex}>
+                        <Link
+                          to={subItem.to}
+                          className={isActive(subItem.to) ? "active" : ""}
+                        >
+                          {subItem.icon &&
+                            React.cloneElement(subItem.icon, {
+                              className: "me-2",
+                            })}
+                          <span className="menu-text">{subItem.text}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <Link to={item.to} className="menu-item-wrapper">
+                  <span className="menu-item-content">
+                    {item.icon &&
+                      React.cloneElement(item.icon, { className: "me-2" })}
+                    <span className="menu-text">{item.text}</span>
+                  </span>
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-        <div className="sidebar-contact d-flex align-items-start">
-          <PhoneIcon className="me-2 mt-1" />
-          <div>
-            <p className="fw-light mb-1 text-nowrap text-truncate">
-              Emergency Contact
-            </p>
-            <h5 className="m-0 lh-1 text-nowrap text-truncate">0987654321</h5>
-          </div>
+      <Divider />
+
+      <div
+        className="sidebar-contact d-flex align-items-start"
+        style={{ padding: 16 }}
+      >
+        <PhoneIcon className="me-2 mt-1" />
+        <div>
+          <p className="fw-light mb-1 text-nowrap text-truncate">
+            Emergency Contact
+          </p>
+          <h5 className="m-0 lh-1 text-nowrap text-truncate">0987654321</h5>
         </div>
-      </nav>
-    </div>
+      </div>
+    </Box>
+  );
+
+  return (
+    // <div style={{ height: "100vh", overflow: "hidden" }}>
+    //   <nav
+    //     id="sidebar"
+    //     className="sidebar-wrapper"
+    //     style={{ height: "100%", display: "flex", flexDirection: "column" }}
+    //   >
+    //     <div className="brand-container d-flex align-items-center justify-content-between">
+    //       <div className="app-brand ms-3">
+    //         <Link to="/">
+    //           <img src={logo} className="logo" alt="Gym Management System" />
+    //         </Link>
+    //       </div>
+
+    //       <button
+    //         type="button"
+    //         className="pin-sidebar me-3"
+    //         onClick={handleDrawerToggle}
+    //         aria-label="Toggle sidebar"
+    //       >
+    //         <MenuIcon />
+    //       </button>
+    //     </div>
+
+    //     <div className="sidebar-profile">
+    //       <div
+    //         className="initials-avatar rounded-circle border border-primary border-3 d-flex align-items-center justify-content-center"
+    //         style={{
+    //           width: "80px",
+    //           height: "80px",
+    //           backgroundColor: "#0d6efd",
+    //           color: "white",
+    //           fontSize: "24px",
+    //           fontWeight: "bold",
+    //         }}
+    //       >
+    //         {getInitials()}
+    //       </div>
+    //       <h6 className="mb-1 profile-name text-nowrap text-truncate text-primary">
+    //         {getUserName()}
+    //       </h6>
+    //       <small className="profile-name text-nowrap text-truncate">
+    //         {getUserRoll()}
+    //       </small>
+    //     </div>
+
+    //     <div
+    //       className="sidebarMenuScroll"
+    //       style={{ flex: 1, overflowY: "auto" }}
+    //     >
+    //       <ul className="sidebar-menu">
+    //         {navItems.map((item, index) => (
+    //           <li
+    //             key={index}
+    //             className={`${isActive(item.to) ? "active current-page" : ""} ${
+    //               item.subItems ? "treeview" : ""
+    //             } ${
+    //               item.subItems && expandedItems[item.text] ? "expanded" : ""
+    //             }`}
+    //           >
+    //             {item.subItems ? (
+    //               <>
+    //                 <div
+    //                   className="menu-item-wrapper"
+    //                   onClick={() => toggleExpand(item.text)}
+    //                 >
+    //                   <span className="menu-item-content">
+    //                     {item.icon &&
+    //                       React.cloneElement(item.icon, { className: "me-2" })}
+    //                     <span className="menu-text">{item.text}</span>
+    //                     <ChevronRightIcon
+    //                       className={`treeview-indicator ${
+    //                         expandedItems[item.text] ? "rotated" : ""
+    //                       }`}
+    //                     />
+    //                   </span>
+    //                 </div>
+    //                 <ul
+    //                   className="treeview-menu"
+    //                   style={{
+    //                     display: expandedItems[item.text] ? "block" : "none",
+    //                   }}
+    //                 >
+    //                   {item.subItems.map((subItem, subIndex) => (
+    //                     <li key={subIndex}>
+    //                       <Link
+    //                         to={subItem.to}
+    //                         className={isActive(subItem.to) ? "active" : ""}
+    //                       >
+    //                         {subItem.icon &&
+    //                           React.cloneElement(subItem.icon, {
+    //                             className: "me-2",
+    //                           })}
+    //                         <span className="menu-text">{subItem.text}</span>
+    //                       </Link>
+    //                     </li>
+    //                   ))}
+    //                 </ul>
+    //               </>
+    //             ) : (
+    //               <Link to={item.to} className="menu-item-wrapper">
+    //                 <span className="menu-item-content">
+    //                   {item.icon &&
+    //                     React.cloneElement(item.icon, { className: "me-2" })}
+    //                   <span className="menu-text">{item.text}</span>
+    //                 </span>
+    //               </Link>
+    //             )}
+    //           </li>
+    //         ))}
+    //       </ul>
+    //     </div>
+
+    //     <div className="sidebar-contact d-flex align-items-start">
+    //       <PhoneIcon className="me-2 mt-1" />
+    //       <div>
+    //         <p className="fw-light mb-1 text-nowrap text-truncate">
+    //           Emergency Contact
+    //         </p>
+    //         <h5 className="m-0 lh-1 text-nowrap text-truncate">0987654321</h5>
+    //       </div>
+    //     </div>
+    //   </nav>
+    // </div>
+    <>
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", sm: "none" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          display: { xs: "none", sm: "block" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+    </>
   );
 };
 

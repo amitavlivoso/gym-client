@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserRoll } from "../../../services/axiosClient";
+import { getAllEquipments } from "../../../services/Service";
 
 const dummyEquipments = [
   {
@@ -25,6 +26,19 @@ const EquipmentPlansPage = () => {
 
   useEffect(() => {
     // Replace with API call
+    const payLoad = {
+      data: { filter: "" },
+      page: 0,
+      pageSize: 50,
+      order: [["createdAt", "ASC"]],
+    };
+    getAllEquipments(payLoad)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     setEquipments(dummyEquipments);
   }, []);
 

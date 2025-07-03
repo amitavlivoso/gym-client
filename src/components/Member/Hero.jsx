@@ -1,10 +1,6 @@
 import React from "react";
 
-import gymvdo from "../../assets/image/gymvdo.mp4";
-
-import Teacher1 from "../../assets/image/teacher1.jpg";
-
-import Teacher2 from "../../assets/image/teacher2.jpg";
+import gymvdo from "../../assets/image/gym.mp4";
 
 import PricingSection from "../../components/Member/Pricing";
 import { useNavigate } from "react-router-dom";
